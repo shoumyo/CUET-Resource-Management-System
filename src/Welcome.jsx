@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import cuetLogo from "./Photos/cuet-logo.png";
+import landingImage from "./Photos/images (1).jpg";
 
 function AnimatedCounter({ target, duration = 2000 }) {
   const [count, setCount] = useState(0);
@@ -26,10 +28,10 @@ export default function Welcome({ onNavigate }) {
       {/* TopNavBar */}
       <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 bg-white/80 backdrop-blur-xl border-b border-outline-variant/30 transition-all">
         <div className="flex items-center gap-md">
-          <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center text-white shadow-sm">
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>school</span>
+          <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center text-white shadow-sm overflow-hidden p-0.5">
+            <img src={cuetLogo} alt="CUET Logo" className="w-full h-full object-contain bg-white rounded-[10px]" />
           </div>
-          <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight">CUET Booking</span>
+          <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight">CUET RESOURCE BOOKING SYSTEM</span>
         </div>
         <div className="flex items-center gap-sm">
           <button
@@ -59,8 +61,8 @@ export default function Welcome({ onNavigate }) {
               System Live — Ready to Book
             </div>
             <h1 className="text-[42px] md:text-[52px] leading-tight font-extrabold text-on-surface tracking-tight">
-              Streamlined Resource
-              <span className="block text-primary">Booking for CUET.</span>
+              CUET RESOURCE
+              <span className="block text-primary">BOOKING SYSTEM</span>
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg leading-relaxed">
               Efficiently manage and reserve campus facilities, auditoriums, and academic resources through our secure, integrated platform designed specifically for university operations.
@@ -97,9 +99,9 @@ export default function Welcome({ onNavigate }) {
 
           <div className="w-full md:w-1/2 h-[400px] md:h-[500px] relative rounded-2xl overflow-hidden border border-outline-variant/30 shadow-2xl shadow-primary/5">
             <img
-              alt="Modern university building"
+              alt="CUET Campus"
               className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtAofiddpaqthUX1oQklNDpcdIV54EnMBC-qU57dOyn3Pq-QGO-VIwY2t8GD2GtWqsFM-WU3ssYhu0pbH0zrzF6_HevgfsZbVVzh5yPsYB1EED6cgtb_uqSp7mS1Agy-9oGRYru9qx-H4OgHflrXDgxqJbq6ZyjV7CpMuTc_YblJhmvIF1amMT2RJbzm_T8UhPcCKGvlmalZIm6iLtRURA0HMDZuh5K9TpXR_49fNNCrCkXfTlKgWzktbZ0uSFJZXt2VGua6fu-7yj"
+              src={landingImage}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
             {/* Floating card */}
@@ -149,7 +151,7 @@ export default function Welcome({ onNavigate }) {
       {/* Footer */}
       <footer className="w-full bg-white/50 backdrop-blur-lg border-t border-outline-variant/30 py-md mt-auto">
         <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop flex justify-between items-center">
-          <span className="font-label-sm text-label-sm text-on-surface-variant">© 2024 CUET Resource System. All rights reserved.</span>
+          <span className="font-label-sm text-label-sm text-on-surface-variant">© 2024 CUET Resource Booking System. All rights reserved.</span>
           <div className="flex gap-md">
             <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy</a>
             <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms</a>

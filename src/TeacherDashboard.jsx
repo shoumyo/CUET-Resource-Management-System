@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getPendingReferenceBookings, teacherApprove, teacherReject } from "./api/bookingApi";
 import { useToast } from "./components/Toast";
+import cuetLogo from "./Photos/cuet-logo.png";
 
 const statusConfig = {
   PENDING_REFERENCE: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "hourglass_top" },
@@ -65,8 +66,8 @@ export default function TeacherDashboard({ onLogout, user }) {
       {/* Side NavBar */}
       <nav className="hidden md:flex flex-col bg-white/80 backdrop-blur-xl border-r border-outline-variant/40 w-[260px] h-screen fixed left-0 top-0 z-40 p-md">
         <div className="flex items-center gap-sm mb-xl">
-          <div className="w-11 h-11 gradient-primary rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>person</span>
+          <div className="w-11 h-11 gradient-primary rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20 overflow-hidden p-1">
+            <img src={cuetLogo} alt="CUET Logo" className="w-full h-full object-contain bg-white rounded-lg" />
           </div>
           <div>
             <h1 className="text-headline-md font-headline-md text-primary font-bold tracking-tight">CUET</h1>

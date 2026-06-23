@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { login, register } from "./api/authApi";
 import { useToast } from "./components/Toast";
+import cuetLogo from "./Photos/cuet-logo.png";
 
 export default function Login({ onNavigate, onLogin }) {
   const toast = useToast();
@@ -49,8 +50,8 @@ export default function Login({ onNavigate, onLogin }) {
         <div className="absolute top-1/2 left-10 w-20 h-20 rounded-full bg-white/5 animate-float" style={{ animationDelay: "4s" }} />
         
         <div className="relative z-10 text-center max-w-md">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-6">
-            <span className="material-symbols-outlined text-white" style={{ fontSize: "32px" }}>school</span>
+          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-6 overflow-hidden p-1.5">
+            <img src={cuetLogo} alt="CUET Logo" className="w-full h-full object-contain bg-white rounded-xl" />
           </div>
           <h2 className="text-[32px] font-extrabold text-white mb-4 tracking-tight">
             Welcome to CUET

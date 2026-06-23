@@ -3,6 +3,7 @@ import { getAllResources } from "./api/resourceApi";
 import { createHold, submitBooking, getMyBookings, getBookingsForResourceOnDate } from "./api/bookingApi";
 import { getTeachers } from "./api/userApi";
 import { useToast } from "./components/Toast";
+import cuetLogo from "./Photos/cuet-logo.png";
 
 const statusConfig = {
   AVAILABLE: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: "check_circle" },
@@ -284,8 +285,8 @@ export default function StudentDashboard({ onLogout, user }) {
       {/* Side NavBar */}
       <nav className="hidden md:flex flex-col bg-white/80 backdrop-blur-xl border-r border-outline-variant/40 w-[260px] h-screen fixed left-0 top-0 z-40 p-md">
         <div className="flex items-center gap-sm mb-xl">
-          <div className="w-11 h-11 gradient-primary rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>school</span>
+          <div className="w-11 h-11 gradient-primary rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20 overflow-hidden p-1">
+            <img src={cuetLogo} alt="CUET Logo" className="w-full h-full object-contain bg-white rounded-lg" />
           </div>
           <div>
             <h1 className="text-headline-md font-headline-md text-primary font-bold tracking-tight">CUET</h1>
