@@ -52,6 +52,8 @@ public class SecurityConfig {
                 // Student endpoints
                 .requestMatchers("/api/bookings/hold", "/api/bookings/my",
                                   "/api/bookings/*/submit").hasRole("STUDENT")
+                // Slot availability - any authenticated user
+                .requestMatchers("/api/bookings/resource/*/date/*").authenticated()
                 // Teacher endpoints
                 .requestMatchers("/api/bookings/pending-reference",
                                   "/api/bookings/*/teacher-approve",

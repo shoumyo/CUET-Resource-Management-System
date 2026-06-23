@@ -1,9 +1,7 @@
 package com.cuet.booking.service;
 
 import com.cuet.booking.dto.ResourceResponse;
-import com.cuet.booking.entity.Booking;
 import com.cuet.booking.entity.Resource;
-import com.cuet.booking.enums.BookingStatus;
 import com.cuet.booking.repository.BookingRepository;
 import com.cuet.booking.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
@@ -66,21 +64,17 @@ public class ResourceService {
         resourceRepository.delete(resource);
     }
 
+    /**
+     * Check availability by querying BookingRepository directly
+     * instead of using the lazy-loaded bookings collection.
+     * A resource is "currently available" if there's no active booking
+     * whose time range overlaps with "now".
+     */
     private boolean isCurrentlyAvailable(Resource r, LocalDateTime now) {
-        // Check if there are any active bookings overlapping with "now"
-        List<Booking> bookings = r.getBookings();
-        if (bookings == null || bookings.isEmpty()) return true;
-
-        return bookings.stream().noneMatch(b -> {
-            BookingStatus status = b.getStatus();
-            boolean isActiveStatus = status == BookingStatus.HELD
-                    || status == BookingStatus.PENDING_REFERENCE
-                    || status == BookingStatus.PENDING_ADMIN
-                    || status == BookingStatus.CONFIRMED;
-            if (!isActiveStatus) return false;
-            // Check if now falls within startTime and bufferEndTime
-            return !now.isBefore(b.getStartTime()) && now.isBefore(b.getBufferEndTime());
-        });
+        // Use existsConflict with a zero-width window at "now"
+        // i.e. check if any active booking spans across the current instant
+        LocalDateTime justAfterNow = now.plusSeconds(1);
+        return !bookingRepository.existsConflict(r.getResourceId(), now, justAfterNow);
     }
 
     private ResourceResponse mapToResponse(Resource r, LocalDateTime now) {

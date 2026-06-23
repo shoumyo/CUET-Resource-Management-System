@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getAllResources } from "./api/resourceApi";
-import { createHold, submitBooking, getMyBookings } from "./api/bookingApi";
+import { createHold, submitBooking, getMyBookings, getBookingsForResourceOnDate } from "./api/bookingApi";
 import { getTeachers } from "./api/userApi";
 import { useToast } from "./components/Toast";
 
@@ -24,7 +24,6 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// Resource type icons
 const typeIcons = {
   "Gallery": "museum",
   "Auditorium": "theater_comedy",
@@ -35,6 +34,91 @@ const typeIcons = {
   "Conference Room": "video_call",
 };
 
+// ─────────────────────────────────────────────────────
+// Generate hourly time slots for a resource
+// ─────────────────────────────────────────────────────
+function generateSlots(resource) {
+  const startHour = resource.indoor ? 9 : 6;
+  const endHour = resource.indoor ? 20 : 22;
+  const slots = [];
+  for (let h = startHour; h < endHour; h++) {
+    slots.push({
+      hour: h,
+      label: `${String(h).padStart(2, "0")}:00 – ${String(h + 1).padStart(2, "0")}:00`,
+      startTime: `${String(h).padStart(2, "0")}:00`,
+      endTime: `${String(h + 1).padStart(2, "0")}:00`,
+    });
+  }
+  return slots;
+}
+
+// ─────────────────────────────────────────────────────
+// Check if a slot is booked
+// ─────────────────────────────────────────────────────
+function isSlotBooked(slot, date, bookings) {
+  const slotStart = new Date(`${date}T${slot.startTime}:00`);
+  const slotEnd = new Date(`${date}T${slot.endTime}:00`);
+  return bookings.some((b) => {
+    const bStart = new Date(b.startTime);
+    const bEnd = new Date(b.endTime);
+    return slotStart < bEnd && slotEnd > bStart;
+  });
+}
+
+// ─────────────────────────────────────────────────────
+// Slot Picker Component
+// ─────────────────────────────────────────────────────
+function SlotPicker({ resource, date, bookings, selectedSlots, onToggleSlot }) {
+  const slots = useMemo(() => generateSlots(resource), [resource]);
+
+  return (
+    <div className="space-y-1.5">
+      {slots.map((slot, i) => {
+        const booked = isSlotBooked(slot, date, bookings);
+        const selected = selectedSlots.includes(slot.hour);
+        
+        let bg, text, border, cursor, hoverClass;
+        if (booked) {
+          bg = "bg-red-50"; text = "text-red-400"; border = "border-red-200";
+          cursor = "cursor-not-allowed opacity-60"; hoverClass = "";
+        } else if (selected) {
+          bg = "bg-primary/10"; text = "text-primary"; border = "border-primary/40";
+          cursor = "cursor-pointer"; hoverClass = "hover:bg-primary/15";
+        } else {
+          bg = "bg-emerald-50/60"; text = "text-emerald-700"; border = "border-emerald-200/70";
+          cursor = "cursor-pointer"; hoverClass = "hover:bg-emerald-100";
+        }
+
+        return (
+          <button
+            key={slot.hour}
+            type="button"
+            disabled={booked}
+            onClick={() => !booked && onToggleSlot(slot.hour)}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-[13px] font-medium transition-all duration-200 ${bg} ${text} ${border} ${cursor} ${hoverClass}`}
+            style={{ animationDelay: `${i * 0.02}s` }}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                {booked ? "block" : selected ? "check_circle" : "radio_button_unchecked"}
+              </span>
+              <span className={selected ? "font-semibold" : ""}>{slot.label}</span>
+            </div>
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+              booked ? "bg-red-100 text-red-500" : selected ? "bg-primary/15 text-primary" : "bg-emerald-100 text-emerald-600"
+            }`}>
+              {booked ? "Booked" : selected ? "Selected" : "Available"}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// Main Dashboard
+// ─────────────────────────────────────────────────────
 export default function StudentDashboard({ onLogout, user }) {
   const toast = useToast();
   const [activeNav, setActiveNav] = useState("book");
@@ -46,16 +130,24 @@ export default function StudentDashboard({ onLogout, user }) {
 
   const [selectedResource, setSelectedResource] = useState(null);
   const [bookingDate, setBookingDate] = useState("");
-  const [bookingTime, setBookingTime] = useState("");
   const [bookingPurpose, setBookingPurpose] = useState("");
+  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [dateBookings, setDateBookings] = useState([]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
-  // Derive filter types dynamically from actual resource data
   const uniqueTypes = [...new Set(resources.map((r) => r.type))].sort();
   const types = ["All", ...uniqueTypes];
   const filtered = filterType === "All" ? resources : resources.filter((r) => r.type === filterType);
+
+  // Tomorrow's date for min date
+  const tomorrow = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -86,21 +178,74 @@ export default function StudentDashboard({ onLogout, user }) {
     setPanelOpen(true);
     setError("");
     setBookingDate("");
-    setBookingTime("");
     setBookingPurpose("");
+    setSelectedSlots([]);
+    setDateBookings([]);
+  };
+
+  // When date changes, fetch bookings for that resource+date
+  const handleDateChange = async (date) => {
+    setBookingDate(date);
+    setSelectedSlots([]);
+    if (!date || !selectedResource) return;
+    setSlotsLoading(true);
+    try {
+      const bookings = await getBookingsForResourceOnDate(selectedResource.resourceId, date);
+      setDateBookings(bookings);
+    } catch (err) {
+      console.error(err);
+      setDateBookings([]);
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  // Toggle slot selection — must be continuous
+  const handleToggleSlot = (hour) => {
+    setSelectedSlots((prev) => {
+      if (prev.includes(hour)) {
+        // Removing: only allow removing from edges
+        if (hour === Math.min(...prev) || hour === Math.max(...prev)) {
+          return prev.filter((h) => h !== hour);
+        }
+        // Can't remove from middle of continuous selection
+        toast.warning("You can only deselect slots from the start or end.", "Continuous Selection");
+        return prev;
+      }
+      
+      if (prev.length === 0) return [hour];
+      
+      const min = Math.min(...prev);
+      const max = Math.max(...prev);
+      
+      // Only allow adding adjacent slots
+      if (hour === min - 1 || hour === max + 1) {
+        return [...prev, hour].sort((a, b) => a - b);
+      }
+      
+      // Not adjacent — check if we should start fresh
+      toast.info("Select consecutive time slots. Click an adjacent slot to extend.", "Slot Selection");
+      return [hour]; // Start fresh selection
+    });
   };
 
   const handleCreateHold = async (e) => {
     e.preventDefault();
     setError("");
+    
+    if (selectedSlots.length === 0) {
+      toast.warning("Please select at least one time slot.", "No Slots");
+      return;
+    }
+
+    const sortedSlots = [...selectedSlots].sort((a, b) => a - b);
+    const startHour = sortedSlots[0];
+    const endHour = sortedSlots[sortedSlots.length - 1] + 1;
+    
+    const startTime = `${bookingDate}T${String(startHour).padStart(2, "0")}:00:00`;
+    const endTime = `${bookingDate}T${String(endHour).padStart(2, "0")}:00:00`;
+
     try {
-      // Create start/end time from date + time slot
-      const [startH, startM] = bookingTime.split(" - ")[0].split(":");
-      const [endH, endM] = bookingTime.split(" - ")[1].split(":");
-
-      const startTime = new Date(`${bookingDate}T${startH}:${startM}:00`).toISOString();
-      const endTime = new Date(`${bookingDate}T${endH}:${endM}:00`).toISOString();
-
       await createHold({
         resourceId: selectedResource.resourceId,
         startTime,
@@ -108,15 +253,15 @@ export default function StudentDashboard({ onLogout, user }) {
         purpose: bookingPurpose,
       });
       toast.success(
-        "Hold created! You have 5 minutes to submit it with a reference teacher.",
+        `Reserved ${sortedSlots.length} slot(s) from ${String(startHour).padStart(2, "0")}:00 to ${String(endHour).padStart(2, "0")}:00. Submit within 5 minutes!`,
         "Resource Held"
       );
       setPanelOpen(false);
       setActiveNav("mybookings");
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || "Failed to create hold";
-      setError(msg);
-      toast.error(msg, "Booking Failed");
+      const msg = err.response?.data?.message || err.response?.data || err.message || "Failed to create hold";
+      setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      toast.error(typeof msg === 'string' ? msg : "Booking failed. Check constraints.", "Booking Failed");
     }
   };
 
@@ -230,7 +375,6 @@ export default function StudentDashboard({ onLogout, user }) {
                     className="card-level-1 overflow-hidden p-0 animate-slide-up"
                     style={{ animationDelay: `${i * 0.05}s`, animationFillMode: "both" }}
                   >
-                    {/* Card Header Gradient */}
                     <div className="h-2 gradient-primary rounded-t-lg" />
                     <div className="p-5">
                       <div className="flex items-start justify-between mb-3">
@@ -245,7 +389,6 @@ export default function StudentDashboard({ onLogout, user }) {
                             <p className="text-[12px] text-on-surface-variant mt-0.5">{resource.type}</p>
                           </div>
                         </div>
-                        {/* Availability Badge */}
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${resource.currentlyAvailable ? "badge-available" : "badge-unavailable"}`}>
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: resource.currentlyAvailable ? "#10b981" : "#ef4444" }} />
                           {resource.currentlyAvailable ? "AVAILABLE" : "IN USE"}
@@ -345,70 +488,156 @@ export default function StudentDashboard({ onLogout, user }) {
         </main>
       </div>
 
-      {/* Booking Panel Overlay */}
+      {/* ═══════════════════ Booking Panel ═══════════════════ */}
       {panelOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 modal-overlay" onClick={() => setPanelOpen(false)} />
-          <div className="relative panel-level-2 w-full max-w-md h-full overflow-y-auto p-lg slide-panel open">
-            <div className="flex justify-between items-center mb-lg">
-              <div>
-                <h3 className="text-[20px] font-bold text-on-surface">Hold Resource</h3>
-                <p className="text-[12px] text-on-surface-variant mt-0.5">Reserve for 5 minutes while you finalize</p>
-              </div>
-              <button onClick={() => setPanelOpen(false)} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-surface-container-low transition-colors">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-[13px] font-medium flex items-center gap-2">
-                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>error</span>
-                {error}
-              </div>
-            )}
-            <div className="mb-lg p-4 gradient-card rounded-xl border border-outline-variant/30">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary" style={{ fontSize: "22px" }}>
-                    {typeIcons[selectedResource?.type] || "domain"}
-                  </span>
-                </div>
+          <div className="relative panel-level-2 w-full max-w-lg h-full overflow-y-auto slide-panel open">
+            {/* Header */}
+            <div className="sticky top-0 bg-white/95 backdrop-blur-xl z-10 p-lg pb-4 border-b border-outline-variant/30">
+              <div className="flex justify-between items-center">
                 <div>
-                  <h4 className="text-[15px] font-semibold text-on-surface">{selectedResource?.name}</h4>
-                  <p className="text-[12px] text-on-surface-variant">{selectedResource?.type} · Capacity {selectedResource?.capacity}</p>
+                  <h3 className="text-[20px] font-bold text-on-surface">Book Resource</h3>
+                  <p className="text-[12px] text-on-surface-variant mt-0.5">Select date & time slots</p>
                 </div>
+                <button onClick={() => setPanelOpen(false)} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-surface-container-low transition-colors">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
               </div>
             </div>
-            <form onSubmit={handleCreateHold} className="space-y-4">
-              <div>
-                <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Date</label>
-                <input type="date" required value={bookingDate} onChange={(e) => setBookingDate(e.target.value)} className="input-standard w-full px-3 py-2.5 text-[14px] text-on-surface bg-white rounded-xl" />
+            
+            <div className="p-lg pt-4">
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-[13px] font-medium flex items-start gap-2">
+                  <span className="material-symbols-outlined flex-shrink-0 mt-0.5" style={{ fontSize: "18px" }}>error</span>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Resource Info Card */}
+              <div className="mb-5 p-4 gradient-card rounded-xl border border-outline-variant/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary" style={{ fontSize: "22px" }}>
+                      {typeIcons[selectedResource?.type] || "domain"}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-[15px] font-semibold text-on-surface">{selectedResource?.name}</h4>
+                    <p className="text-[12px] text-on-surface-variant">
+                      {selectedResource?.type} · Capacity {selectedResource?.capacity} · {selectedResource?.indoor ? `${selectedResource?.openTime?.substring(0,5)} – ${selectedResource?.closeTime?.substring(0,5)}` : "Open 24/7"}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Time Slot (min 2 hours)</label>
-                <select required value={bookingTime} onChange={(e) => setBookingTime(e.target.value)} className="input-standard w-full px-3 py-2.5 text-[14px] text-on-surface bg-white rounded-xl">
-                  <option value="">Select time...</option>
-                  <option>09:00 - 11:00</option>
-                  <option>11:00 - 13:00</option>
-                  <option>14:00 - 16:00</option>
-                  <option>16:00 - 18:00</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Purpose</label>
-                <textarea required rows={3} value={bookingPurpose} onChange={(e) => setBookingPurpose(e.target.value)} placeholder="Describe the purpose of booking..." className="input-standard w-full px-3 py-2.5 text-[14px] text-on-surface bg-white resize-none rounded-xl" />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setPanelOpen(false)} className="flex-1 py-2.5 border border-outline-variant/50 rounded-xl text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container-low transition-all">
-                  Cancel
-                </button>
-                <button type="submit" className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold transition-all bg-amber-500 text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/25">
-                  <span className="flex items-center justify-center gap-1.5">
-                    <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>timer</span>
-                    Hold (5 Mins)
-                  </span>
-                </button>
-              </div>
-            </form>
+
+              <form onSubmit={handleCreateHold} className="space-y-5">
+                {/* Date Picker */}
+                <div>
+                  <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>calendar_today</span>
+                      Select Date
+                    </span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    min={tomorrow}
+                    value={bookingDate}
+                    onChange={(e) => handleDateChange(e.target.value)}
+                    className="input-standard w-full px-3 py-2.5 text-[14px] text-on-surface bg-white rounded-xl"
+                  />
+                  <p className="text-[11px] text-on-surface-variant mt-1">Bookings available from tomorrow onwards</p>
+                </div>
+
+                {/* Time Slot Grid */}
+                {bookingDate && (
+                  <div className="animate-slide-up">
+                    <label className="block text-[12px] font-semibold text-on-surface-variant mb-2 uppercase tracking-wider">
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>schedule</span>
+                        Select Time Slots
+                      </span>
+                    </label>
+                    
+                    {/* Legend */}
+                    <div className="flex gap-4 mb-3">
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="w-3 h-3 rounded-sm bg-emerald-100 border border-emerald-200" />
+                        <span className="text-on-surface-variant">Available</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="w-3 h-3 rounded-sm bg-red-100 border border-red-200" />
+                        <span className="text-on-surface-variant">Booked</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="w-3 h-3 rounded-sm bg-primary/15 border border-primary/30" />
+                        <span className="text-on-surface-variant">Selected</span>
+                      </div>
+                    </div>
+
+                    {slotsLoading ? (
+                      <div className="py-8 text-center text-on-surface-variant">
+                        <svg className="animate-spin h-6 w-6 mx-auto mb-2 text-primary" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <p className="text-[13px]">Loading availability...</p>
+                      </div>
+                    ) : (
+                      <div className="max-h-[320px] overflow-y-auto pr-1">
+                        <SlotPicker
+                          resource={selectedResource}
+                          date={bookingDate}
+                          bookings={dateBookings}
+                          selectedSlots={selectedSlots}
+                          onToggleSlot={handleToggleSlot}
+                        />
+                      </div>
+                    )}
+
+                    {selectedSlots.length > 0 && (
+                      <div className="mt-3 p-3 bg-primary/5 rounded-xl border border-primary/15">
+                        <p className="text-[12px] font-semibold text-primary">
+                          Selected: {String(Math.min(...selectedSlots)).padStart(2, "0")}:00 – {String(Math.max(...selectedSlots) + 1).padStart(2, "0")}:00 ({selectedSlots.length} hour{selectedSlots.length > 1 ? "s" : ""})
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Purpose */}
+                <div>
+                  <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Purpose</label>
+                  <textarea
+                    required
+                    rows={2}
+                    value={bookingPurpose}
+                    onChange={(e) => setBookingPurpose(e.target.value)}
+                    placeholder="Describe the purpose of booking..."
+                    className="input-standard w-full px-3 py-2.5 text-[14px] text-on-surface bg-white resize-none rounded-xl"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => setPanelOpen(false)} className="flex-1 py-2.5 border border-outline-variant/50 rounded-xl text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container-low transition-all">
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={selectedSlots.length === 0}
+                    className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold transition-all bg-amber-500 text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center justify-center gap-1.5">
+                      <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>timer</span>
+                      Hold (5 Mins)
+                    </span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

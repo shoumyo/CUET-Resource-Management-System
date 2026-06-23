@@ -44,33 +44,28 @@ public class BookingService {
         LocalDateTime endTime = req.getEndTime();
         LocalDateTime now = LocalDateTime.now();
 
-        // 2. Validate 24-hour advance notice
-        if (startTime.isBefore(now.plusHours(24))) {
-            throw new IllegalArgumentException("Bookings must be made at least 24 hours in advance.");
+        // 2. Validate booking is for tomorrow or later
+        if (!startTime.toLocalDate().isAfter(now.toLocalDate())) {
+            throw new IllegalArgumentException("Bookings must be for tomorrow or a future date.");
         }
 
-        // 3. Validate duration >= 2 hours
+        // 3. Validate duration >= 1 hour
         long durationHours = ChronoUnit.HOURS.between(startTime, endTime);
-        if (durationHours < 2) {
-            throw new IllegalArgumentException("Booking duration must be at least 2 hours.");
+        if (durationHours < 1) {
+            throw new IllegalArgumentException("Booking duration must be at least 1 hour.");
         }
 
-        // 4. Calculate buffer_end_time = endTime + 2 hours
-        LocalDateTime bufferEndTime = endTime.plusHours(2);
+        // 4. bufferEndTime = endTime (no extra buffer)
+        LocalDateTime bufferEndTime = endTime;
 
         // 5. Validate operational hours for indoor venues
         if (resource.isIndoor()) {
             LocalTime startLocalTime = startTime.toLocalTime();
-            LocalTime bufferEndLocalTime = bufferEndTime.toLocalTime();
-            
-            // If the buffer extends to the next day, it's definitely past 20:00 of the start day
-            if (bufferEndTime.toLocalDate().isAfter(startTime.toLocalDate())) {
-                throw new IllegalArgumentException("Indoor bookings with buffer cannot span across multiple days.");
-            }
+            LocalTime endLocalTime = endTime.toLocalTime();
 
-            if (startLocalTime.isBefore(LocalTime.of(9, 0)) || bufferEndLocalTime.isAfter(LocalTime.of(20, 0))) {
+            if (startLocalTime.isBefore(LocalTime.of(9, 0)) || endLocalTime.isAfter(LocalTime.of(20, 0))) {
                 throw new IllegalArgumentException(
-                    "Indoor venues are only operational from 09:00 to 20:00 (including the 2-hour buffer)."
+                    "Indoor venues are only operational from 09:00 to 20:00."
                 );
             }
         }
@@ -117,6 +112,27 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    public List<BookingResponse> getBookingsForResourceOnDate(Long resourceId, String dateStr) {
+        java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+        LocalDateTime dayStart = date.atStartOfDay();
+        LocalDateTime dayEnd = date.atTime(23, 59, 59);
+        
+        List<BookingStatus> activeStatuses = java.util.List.of(
+            BookingStatus.HELD, BookingStatus.PENDING_REFERENCE,
+            BookingStatus.PENDING_ADMIN, BookingStatus.CONFIRMED
+        );
+        
+        return bookingRepository.findAll().stream()
+                .filter(b -> b.getResource().getResourceId().equals(resourceId))
+                .filter(b -> activeStatuses.contains(b.getStatus()))
+                .filter(b -> {
+                    // Check if booking overlaps with the given date
+                    return !b.getEndTime().isBefore(dayStart) && !b.getStartTime().isAfter(dayEnd);
+                })
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     // ─────────────────────────────────────────────────────
     // Teacher Actions
     // ─────────────────────────────────────────────────────
@@ -152,7 +168,8 @@ public class BookingService {
     // ─────────────────────────────────────────────────────
 
     public List<BookingResponse> getPendingAdminBookings(Long adminId) {
-        return bookingRepository.findAllByResource_TeacherInCharge_UserIdAndStatus(adminId, BookingStatus.PENDING_ADMIN).stream()
+        // Return ALL pending-admin bookings system-wide (true admin access)
+        return bookingRepository.findAllByStatusIn(java.util.List.of(BookingStatus.PENDING_ADMIN)).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }

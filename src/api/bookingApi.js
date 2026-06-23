@@ -15,6 +15,11 @@ export const getMyBookings = async () => {
   return response.data;
 };
 
+export const getBookingsForResourceOnDate = async (resourceId, date) => {
+  const response = await api.get(`/bookings/resource/${resourceId}/date/${date}`);
+  return response.data;
+};
+
 // Teacher endpoints
 export const getPendingReferenceBookings = async () => {
   const response = await api.get('/bookings/pending-reference');

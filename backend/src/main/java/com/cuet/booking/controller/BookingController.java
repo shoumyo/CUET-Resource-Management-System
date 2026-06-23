@@ -48,6 +48,12 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getStudentBookings(studentId));
     }
 
+    @GetMapping("/resource/{resourceId}/date/{date}")
+    public ResponseEntity<List<BookingResponse>> getBookingsForResourceOnDate(
+            @PathVariable Long resourceId, @PathVariable String date) {
+        return ResponseEntity.ok(bookingService.getBookingsForResourceOnDate(resourceId, date));
+    }
+
     // ─────────────────────────────────────────────────────
     // Teacher Endpoints
     // ─────────────────────────────────────────────────────
