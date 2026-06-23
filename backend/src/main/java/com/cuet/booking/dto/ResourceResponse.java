@@ -21,4 +21,5 @@ public class ResourceResponse {
     private LocalTime closeTime;
     private Long    teacherInChargeId;
     private String  teacherInChargeName;
+    private boolean currentlyAvailable;
 }

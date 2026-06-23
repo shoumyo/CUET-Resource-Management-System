@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import { ToastProvider } from "./components/Toast";
 import Welcome from "./Welcome";
 import Login from "./Login";
 import StudentDashboard from "./StudentDashboard";
 import TeacherDashboard from "./TeacherDashboard";
 import AdminDashboard from "./AdminDashboard";
 
-export default function App() {
+function AppContent() {
   const [screen, setScreen] = useState("welcome");
   const [user, setUser] = useState(null);
 
@@ -45,4 +46,12 @@ export default function App() {
   if (screen === "admin") return <AdminDashboard onLogout={handleLogout} user={user} />;
 
   return <Welcome onNavigate={navigate} />;
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
+  );
 }

@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // Resource listing is public (anyone can see what's available)
-                .requestMatchers(HttpMethod.GET, "/api/resources/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/resources", "/api/resources/**").permitAll()
                 // Student endpoints
                 .requestMatchers("/api/bookings/hold", "/api/bookings/my",
                                   "/api/bookings/*/submit").hasRole("STUDENT")
@@ -60,10 +60,15 @@ public class SecurityConfig {
                 .requestMatchers("/api/bookings/pending-admin",
                                   "/api/bookings/all",
                                   "/api/bookings/*/admin-approve",
-                                  "/api/bookings/*/admin-reject",
-                                  "/api/resources/**").hasRole("ADMIN")
-                // Teachers list is available to students (for reference selection)
-                .requestMatchers(HttpMethod.GET, "/api/users/teachers").hasAnyRole("STUDENT")
+                                  "/api/bookings/*/admin-reject").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/bookings/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/resources").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/resources/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/resources/*").hasRole("ADMIN")
+                .requestMatchers("/api/users/all").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
+                // Teachers list is available to students and admins (for reference selection)
+                .requestMatchers(HttpMethod.GET, "/api/users/teachers").hasAnyRole("STUDENT", "ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

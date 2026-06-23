@@ -51,3 +51,8 @@ export const adminReject = async (bookingId) => {
   const response = await api.put(`/bookings/${bookingId}/admin-reject`);
   return response.data;
 };
+
+export const deleteBooking = async (bookingId) => {
+  const response = await api.delete(`/bookings/${bookingId}`);
+  return response.data;
+};

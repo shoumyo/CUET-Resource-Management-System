@@ -5,9 +5,7 @@ import com.cuet.booking.enums.Role;
 import com.cuet.booking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -30,5 +28,26 @@ public class UserController {
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(teachers);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Map<String, Object>>> getAllUsers() {
+        List<Map<String, Object>> users = userRepository.findAll().stream()
+                .map(u -> Map.of(
+                        "id", (Object) u.getUserId(),
+                        "name", u.getName(),
+                        "email", u.getEmail(),
+                        "role", u.getRole().name()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+        userRepository.delete(user);
+        return ResponseEntity.noContent().build();
     }
 }

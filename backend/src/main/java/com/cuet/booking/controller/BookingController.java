@@ -82,8 +82,8 @@ public class BookingController {
 
     @GetMapping("/all")
     public ResponseEntity<List<BookingResponse>> getAllAdminBookings(HttpServletRequest request) {
-        Long adminId = getUserIdFromRequest(request);
-        return ResponseEntity.ok(bookingService.getAllAdminBookings(adminId));
+        // Return ALL bookings system-wide for true admin access
+        return ResponseEntity.ok(bookingService.getAllBookings());
     }
 
     @PutMapping("/{id}/admin-approve")
@@ -96,5 +96,11 @@ public class BookingController {
     public ResponseEntity<BookingResponse> adminReject(@PathVariable Long id, HttpServletRequest request) {
         Long adminId = getUserIdFromRequest(request);
         return ResponseEntity.ok(bookingService.adminReject(id, adminId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
+        bookingService.deleteBooking(id);
+        return ResponseEntity.noContent().build();
     }
 }

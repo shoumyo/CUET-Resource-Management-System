@@ -171,20 +171,11 @@ public class BookingService {
 
     @Transactional
     public BookingResponse adminApprove(Long bookingId, Long adminId) {
-        Booking booking = getBookingAndVerifyAdmin(bookingId, adminId);
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
         if (booking.getStatus() != BookingStatus.PENDING_ADMIN) {
             throw new IllegalStateException("Booking is not pending admin approval.");
         }
-        
-        // Re-check conflict just in case
-        boolean hasConflict = bookingRepository.existsConflict(
-            booking.getResource().getResourceId(), 
-            booking.getStartTime(), 
-            booking.getBufferEndTime()
-        );
-        // Exclude self from conflict check if needed, but existsConflict checks status IN ('HELD','PENDING_REFERENCE','PENDING_ADMIN','CONFIRMED')
-        // So it will always find itself. Let's adjust or ignore since it's already PENDING_ADMIN.
-        // For simplicity, we just approve it because overlap check is strict at creation.
         
         booking.setStatus(BookingStatus.CONFIRMED);
         return mapToResponse(bookingRepository.save(booking));
@@ -192,12 +183,20 @@ public class BookingService {
 
     @Transactional
     public BookingResponse adminReject(Long bookingId, Long adminId) {
-        Booking booking = getBookingAndVerifyAdmin(bookingId, adminId);
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
         if (booking.getStatus() != BookingStatus.PENDING_ADMIN) {
             throw new IllegalStateException("Booking is not pending admin approval.");
         }
         booking.setStatus(BookingStatus.REJECTED);
         return mapToResponse(bookingRepository.save(booking));
+    }
+
+    @Transactional
+    public void deleteBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        bookingRepository.delete(booking);
     }
 
     // ─────────────────────────────────────────────────────
