@@ -34,9 +34,9 @@ public class BookingService {
     public BookingResponse createHold(BookingRequest req, Long studentId) {
         User student = userService.getById(studentId);
         
-        // 1. Validate email ends with @cuet.ac.bd
-        if (!student.getEmail().toLowerCase().endsWith("@cuet.ac.bd")) {
-            throw new IllegalArgumentException("Only @cuet.ac.bd users can make bookings.");
+        // 1. Validate email ends with cuet.ac.bd
+        if (!student.getEmail().toLowerCase().endsWith("cuet.ac.bd")) {
+            throw new IllegalArgumentException("Only cuet.ac.bd users can make bookings.");
         }
 
         Resource resource = resourceService.getResourceById(req.getResourceId());
