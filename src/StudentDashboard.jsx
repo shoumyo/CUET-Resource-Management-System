@@ -444,67 +444,180 @@ export default function StudentDashboard({ onLogout, user }) {
           {activeNav === "mybookings" && (
             <div className="animate-fade-in">
               <div className="card-level-1 overflow-hidden">
-                <div className="divide-y divide-outline-variant/30">
-                  {myBookings.map((b, i) => (
-                    <div
-                      key={b.bookingId}
-                      className="p-5 flex flex-col md:flex-row md:items-center gap-4 hover:bg-primary/[0.02] transition-colors animate-slide-up"
-                      style={{ animationDelay: `${i * 0.05}s`, animationFillMode: "both" }}
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-[12px] font-medium text-on-surface-variant bg-surface-container-low px-2 py-0.5 rounded-md">#{b.bookingId}</span>
-                          <StatusBadge status={b.status} />
+                  <div className="space-y-4 p-1">
+                    {myBookings.map((b, i) => {
+                      const resourceIcon = typeIcons[b.resourceType] || typeIcons[resources.find(r => r.name === b.resourceName)?.type] || "domain";
+                      
+                      return (
+                        <div
+                          key={b.bookingId}
+                          className="card-level-1 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 animate-slide-up"
+                          style={{ animationDelay: `${i * 0.05}s`, animationFillMode: "both" }}
+                        >
+                          <div className="p-5 flex flex-col xl:flex-row gap-6">
+                            
+                            {/* Left Column: Resource & Schedule Details */}
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md shadow-primary/20">
+                                    <span className="material-symbols-outlined text-white" style={{ fontSize: "20px" }}>{resourceIcon}</span>
+                                  </div>
+                                  <div>
+                                    <h3 className="text-[17px] font-bold text-on-surface leading-tight">{b.resourceName}</h3>
+                                    <p className="text-[12px] font-medium text-primary mt-0.5">Booking #{b.bookingId}</p>
+                                  </div>
+                                </div>
+                                <StatusBadge status={b.status} />
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                <div className="bg-surface-container-low/50 rounded-xl p-3 border border-outline-variant/30">
+                                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 flex items-center gap-1">
+                                    <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>calendar_today</span> Date
+                                  </p>
+                                  <p className="text-[13px] font-semibold text-on-surface">{new Date(b.startTime).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                </div>
+                                <div className="bg-surface-container-low/50 rounded-xl p-3 border border-outline-variant/30">
+                                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 flex items-center gap-1">
+                                    <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>schedule</span> Time
+                                  </p>
+                                  <p className="text-[13px] font-semibold text-on-surface">
+                                    {new Date(b.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} — {new Date(b.endTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {b.purpose && (
+                                <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100/50">
+                                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Purpose</p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed">{b.purpose}</p>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Divider for desktop */}
+                            <div className="hidden xl:block w-px bg-outline-variant/30 my-2"></div>
+
+                            {/* Right Column: Approval Flow & Actions */}
+                            <div className="xl:w-[360px] flex flex-col justify-between">
+                              <div>
+                                <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Approval Tracker</p>
+                                <div className="bg-surface-container-low/30 rounded-xl p-3.5 border border-outline-variant/40 mb-4">
+                                  <div className="flex items-center justify-between relative">
+                                    {/* Timeline Background Line */}
+                                    <div className="absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-outline-variant/30 -translate-y-1/2 z-0"></div>
+                                    
+                                    {/* Step 1: Held */}
+                                    <div className="relative z-10 flex flex-col items-center gap-1.5">
+                                      <div className={`w-7 h-7 rounded-full flex items-center justify-center ${b.status === "HELD" ? "bg-amber-100 border-2 border-amber-400 animate-pulse text-amber-600" : "bg-emerald-500 text-white"}`}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>{b.status === "HELD" ? "hourglass_empty" : "check"}</span>
+                                      </div>
+                                      <span className={`text-[9px] font-bold ${b.status === "HELD" ? "text-amber-600" : "text-emerald-600"}`}>Draft</span>
+                                    </div>
+                                    
+                                    {/* Step 2: Reference */}
+                                    <div className="relative z-10 flex flex-col items-center gap-1.5">
+                                      <div className={`w-7 h-7 rounded-full flex items-center justify-center ${b.status === "PENDING_REFERENCE" ? "bg-blue-100 border-2 border-blue-400 animate-pulse text-blue-600" : b.status === "HELD" ? "bg-white border border-outline-variant text-on-surface-variant" : "bg-emerald-500 text-white"}`}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>{b.status === "PENDING_REFERENCE" ? "person_search" : b.status === "HELD" ? "person" : "check"}</span>
+                                      </div>
+                                      <span className={`text-[9px] font-bold ${b.status === "PENDING_REFERENCE" ? "text-blue-600" : "text-on-surface-variant"}`}>Teacher</span>
+                                    </div>
+
+                                    {/* Step 3: Admin */}
+                                    <div className="relative z-10 flex flex-col items-center gap-1.5">
+                                      <div className={`w-7 h-7 rounded-full flex items-center justify-center ${b.status === "PENDING_ADMIN" ? "bg-purple-100 border-2 border-purple-400 animate-pulse text-purple-600" : b.status === "CONFIRMED" ? "bg-emerald-500 text-white" : "bg-white border border-outline-variant text-on-surface-variant"}`}>
+                                        <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>{b.status === "PENDING_ADMIN" ? "admin_panel_settings" : b.status === "CONFIRMED" ? "check" : "shield_person"}</span>
+                                      </div>
+                                      <span className={`text-[9px] font-bold ${b.status === "PENDING_ADMIN" ? "text-purple-600" : "text-on-surface-variant"}`}>Admin</span>
+                                    </div>
+                                  </div>
+                                  
+                                  {b.referenceTeacherName && b.status !== "HELD" && (
+                                    <div className="mt-3 pt-3 border-t border-outline-variant/30 flex items-center gap-2">
+                                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-bold">
+                                        {b.referenceTeacherName.charAt(0)}
+                                      </div>
+                                      <div className="text-[11px]">
+                                        <span className="text-on-surface-variant">Reviewer: </span>
+                                        <span className="font-semibold text-on-surface">{b.referenceTeacherName}</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Action Section */}
+                              <div>
+                                {b.status === "HELD" ? (
+                                  <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-3.5 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-2 opacity-10 pointer-events-none">
+                                      <span className="material-symbols-outlined" style={{ fontSize: "60px" }}>warning</span>
+                                    </div>
+                                    <div className="relative z-10">
+                                      <p className="text-[12px] font-bold text-amber-700 mb-1">Action Required</p>
+                                      <p className="text-[11px] text-amber-600/90 mb-3 leading-tight">You must select a reference teacher to forward this booking for approval, otherwise it will expire.</p>
+                                      
+                                      <div className="flex flex-col sm:flex-row gap-2">
+                                        <div className="relative flex-1">
+                                          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-amber-600/50" style={{ fontSize: "16px" }}>person_search</span>
+                                          <select 
+                                            id={`teacher-select-${b.bookingId}`} 
+                                            className="w-full pl-8 pr-3 py-2 text-[12px] bg-white border border-amber-200 rounded-lg text-on-surface focus:ring-2 focus:ring-amber-400 outline-none transition-shadow font-medium appearance-none"
+                                            style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0.5rem center", backgroundSize: "1em" }}
+                                          >
+                                            <option value="" disabled selected>Select Reference Teacher...</option>
+                                            {teachers.map((t) => (
+                                              <option key={t.id} value={t.id}>{t.name}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <button
+                                          onClick={() => {
+                                            const val = document.getElementById(`teacher-select-${b.bookingId}`).value;
+                                            handleSubmitBooking(b.bookingId, val);
+                                          }}
+                                          className="px-4 py-2 rounded-lg bg-amber-500 text-white text-[12px] font-bold hover:bg-amber-600 hover:shadow-md transition-all sm:w-auto w-full flex items-center justify-center gap-1"
+                                        >
+                                          Submit <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>send</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-2">
+                                    <div className="flex-1 px-3 py-2.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/30 text-center flex items-center justify-center gap-1.5">
+                                      <span className="material-symbols-outlined text-primary/70" style={{ fontSize: "16px" }}>info</span>
+                                      <span className="text-[12px] font-medium text-on-surface-variant">Waiting for approval</span>
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {(b.status === "HELD" || b.status === "PENDING_REFERENCE") && (
+                                  <button
+                                    onClick={() => handleCancelBooking(b.bookingId)}
+                                    className="mt-2 w-full py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 text-[12px] font-semibold transition-colors flex items-center justify-center gap-1"
+                                  >
+                                    <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>cancel</span>
+                                    Cancel Booking
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-[16px] font-semibold text-on-surface">{b.resourceName}</p>
-                        <div className="flex items-center gap-1 mt-1 text-[13px] text-on-surface-variant">
-                          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>schedule</span>
-                          {new Date(b.startTime).toLocaleString()} — {new Date(b.endTime).toLocaleTimeString()}
-                        </div>
-                        {b.purpose && (
-                          <p className="text-[12px] text-on-surface-variant mt-1 italic">Purpose: {b.purpose}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-                        {b.status === "HELD" && (
-                          <>
-                            <select id={`teacher-select-${b.bookingId}`} className="input-standard px-3 py-2 text-[13px] bg-white rounded-xl min-w-[180px]">
-                              <option value="">Select Ref Teacher</option>
-                              {teachers.map((t) => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={() => {
-                                const val = document.getElementById(`teacher-select-${b.bookingId}`).value;
-                                handleSubmitBooking(b.bookingId, val);
-                              }}
-                              className="px-4 py-2 rounded-xl gradient-primary text-white text-[12px] font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all"
-                            >
-                              Submit
-                            </button>
-                          </>
-                        )}
-                        {(b.status === "HELD" || b.status === "PENDING_REFERENCE") && (
-                          <button
-                            onClick={() => handleCancelBooking(b.bookingId)}
-                            className="px-4 py-2 rounded-xl bg-red-50 text-red-700 border border-red-200 text-[12px] font-semibold hover:bg-red-100 transition-all flex items-center gap-1"
-                          >
-                            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>close</span>
-                            Cancel
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })}
+                  </div>
                   {myBookings.length === 0 && (
-                    <div className="p-16 text-center text-on-surface-variant">
-                      <span className="material-symbols-outlined block mb-3" style={{ fontSize: "48px", opacity: 0.4 }}>event_busy</span>
-                      <p className="text-[16px] font-medium">No bookings yet</p>
-                      <p className="text-[13px] mt-1">Start by booking a resource from the available list.</p>
+                    <div className="card-level-1 p-16 text-center text-on-surface-variant">
+                      <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                        <span className="material-symbols-outlined text-primary" style={{ fontSize: "40px" }}>event_busy</span>
+                      </div>
+                      <p className="text-[20px] font-bold text-on-surface mb-1">No bookings yet</p>
+                      <p className="text-[14px] text-on-surface-variant max-w-sm mx-auto">Start by booking a resource from the available list. Your active and past bookings will appear here.</p>
                     </div>
                   )}
-                </div>
               </div>
             </div>
           )}
