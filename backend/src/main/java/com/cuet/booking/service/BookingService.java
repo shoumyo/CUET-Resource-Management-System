@@ -210,6 +210,17 @@ public class BookingService {
     }
 
     @Transactional
+    public void studentCancelBooking(Long bookingId, Long studentId) {
+        Booking booking = getBookingAndVerifyStudent(bookingId, studentId);
+
+        if (booking.getStatus() != BookingStatus.HELD && booking.getStatus() != BookingStatus.PENDING_REFERENCE) {
+            throw new IllegalStateException("You can only cancel bookings that are HELD or PENDING_REFERENCE. Once the reference teacher has approved, cancellation is no longer allowed.");
+        }
+
+        bookingRepository.delete(booking);
+    }
+
+    @Transactional
     public void deleteBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
@@ -274,6 +285,7 @@ public class BookingService {
                 .purpose(b.getPurpose())
                 .resourceId(b.getResource().getResourceId())
                 .resourceName(b.getResource().getName())
+                .resourceType(b.getResource().getType())
                 .studentId(b.getStudent().getUserId())
                 .studentName(b.getStudent().getName())
                 .studentEmail(b.getStudent().getEmail())

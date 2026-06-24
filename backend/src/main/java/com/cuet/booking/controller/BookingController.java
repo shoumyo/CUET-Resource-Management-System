@@ -48,6 +48,13 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getStudentBookings(studentId));
     }
 
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<Void> studentCancelBooking(@PathVariable Long id, HttpServletRequest request) {
+        Long studentId = getUserIdFromRequest(request);
+        bookingService.studentCancelBooking(id, studentId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/resource/{resourceId}/date/{date}")
     public ResponseEntity<List<BookingResponse>> getBookingsForResourceOnDate(
             @PathVariable Long resourceId, @PathVariable String date) {

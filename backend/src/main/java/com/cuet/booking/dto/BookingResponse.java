@@ -20,6 +20,7 @@ public class BookingResponse {
     // Resource info
     private Long   resourceId;
     private String resourceName;
+    private String resourceType;
 
     // Student info
     private Long   studentId;

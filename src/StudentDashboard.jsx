@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { getAllResources } from "./api/resourceApi";
-import { createHold, submitBooking, getMyBookings, getBookingsForResourceOnDate } from "./api/bookingApi";
+import { createHold, submitBooking, getMyBookings, getBookingsForResourceOnDate, studentCancelBooking } from "./api/bookingApi";
 import { getTeachers } from "./api/userApi";
 import { useToast } from "./components/Toast";
 import cuetLogo from "./Photos/cuet-logo.png";
@@ -280,6 +280,17 @@ export default function StudentDashboard({ onLogout, user }) {
     }
   };
 
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm("Are you sure you want to cancel this reservation?")) return;
+    try {
+      await studentCancelBooking(bookingId);
+      toast.success("Reservation cancelled successfully.", "Cancelled");
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to cancel reservation", "Cancel Failed");
+    }
+  };
+
   return (
     <div className="text-on-surface font-body-md min-h-screen overflow-x-hidden flex" style={{ background: "linear-gradient(135deg, #f8f9fc 0%, #eef0f7 50%, #f0f2fa 100%)" }}>
       {/* Side NavBar */}
@@ -454,25 +465,36 @@ export default function StudentDashboard({ onLogout, user }) {
                           <p className="text-[12px] text-on-surface-variant mt-1 italic">Purpose: {b.purpose}</p>
                         )}
                       </div>
-                      {b.status === "HELD" && (
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <select id={`teacher-select-${b.bookingId}`} className="input-standard px-3 py-2 text-[13px] bg-white rounded-xl min-w-[180px]">
-                            <option value="">Select Ref Teacher</option>
-                            {teachers.map((t) => (
-                              <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                          </select>
+                      <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+                        {b.status === "HELD" && (
+                          <>
+                            <select id={`teacher-select-${b.bookingId}`} className="input-standard px-3 py-2 text-[13px] bg-white rounded-xl min-w-[180px]">
+                              <option value="">Select Ref Teacher</option>
+                              {teachers.map((t) => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => {
+                                const val = document.getElementById(`teacher-select-${b.bookingId}`).value;
+                                handleSubmitBooking(b.bookingId, val);
+                              }}
+                              className="px-4 py-2 rounded-xl gradient-primary text-white text-[12px] font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all"
+                            >
+                              Submit
+                            </button>
+                          </>
+                        )}
+                        {(b.status === "HELD" || b.status === "PENDING_REFERENCE") && (
                           <button
-                            onClick={() => {
-                              const val = document.getElementById(`teacher-select-${b.bookingId}`).value;
-                              handleSubmitBooking(b.bookingId, val);
-                            }}
-                            className="px-4 py-2 rounded-xl gradient-primary text-white text-[12px] font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all"
+                            onClick={() => handleCancelBooking(b.bookingId)}
+                            className="px-4 py-2 rounded-xl bg-red-50 text-red-700 border border-red-200 text-[12px] font-semibold hover:bg-red-100 transition-all flex items-center gap-1"
                           >
-                            Submit
+                            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>close</span>
+                            Cancel
                           </button>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   ))}
                   {myBookings.length === 0 && (

@@ -51,7 +51,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/resources", "/api/resources/**").permitAll()
                 // Student endpoints
                 .requestMatchers("/api/bookings/hold", "/api/bookings/my",
-                                  "/api/bookings/*/submit").hasRole("STUDENT")
+                                  "/api/bookings/*/submit",
+                                  "/api/bookings/*/cancel").hasRole("STUDENT")
                 // Slot availability - any authenticated user
                 .requestMatchers("/api/bookings/resource/*/date/*").authenticated()
                 // Teacher endpoints
