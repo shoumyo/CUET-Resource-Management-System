@@ -118,6 +118,33 @@ function SlotPicker({ resource, date, bookings, selectedSlots, onToggleSlot }) {
 }
 
 // ─────────────────────────────────────────────────────
+// Confirmation Modal
+// ─────────────────────────────────────────────────────
+function ConfirmModal({ open, title, message, icon, iconColor, iconBg, onConfirm, onCancel, confirmText, confirmClass }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+      <div className="absolute inset-0 modal-overlay" onClick={onCancel} />
+      <div className="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 animate-slide-up">
+        <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center mb-4`}>
+          <span className={`material-symbols-outlined ${iconColor}`} style={{ fontSize: "24px" }}>{icon}</span>
+        </div>
+        <h3 className="text-[18px] font-bold text-on-surface mb-1">{title}</h3>
+        <p className="text-[14px] text-on-surface-variant mb-5 leading-relaxed">{message}</p>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-2.5 border border-outline-variant/50 rounded-xl text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container-low transition-all">
+            Cancel
+          </button>
+          <button onClick={onConfirm} className={`flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all hover:shadow-lg ${confirmClass}`}>
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────
 // Main Dashboard
 // ─────────────────────────────────────────────────────
 export default function StudentDashboard({ onLogout, user }) {
@@ -135,6 +162,7 @@ export default function StudentDashboard({ onLogout, user }) {
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [dateBookings, setDateBookings] = useState([]);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ open: false });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [slotsLoading, setSlotsLoading] = useState(false);
@@ -280,15 +308,27 @@ export default function StudentDashboard({ onLogout, user }) {
     }
   };
 
-  const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to cancel this reservation?")) return;
-    try {
-      await studentCancelBooking(bookingId);
-      toast.success("Reservation cancelled successfully.", "Cancelled");
-      fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to cancel reservation", "Cancel Failed");
-    }
+  const handleCancelBooking = (bookingId) => {
+    setConfirmModal({
+      open: true,
+      title: "Cancel Reservation?",
+      message: "Are you sure you want to cancel this reservation? This action cannot be undone.",
+      icon: "event_busy",
+      iconColor: "text-red-500",
+      iconBg: "bg-red-50",
+      confirmText: "Cancel Reservation",
+      confirmClass: "bg-red-500 hover:bg-red-600 hover:shadow-red-500/25",
+      onConfirm: async () => {
+        setConfirmModal({ open: false });
+        try {
+          await studentCancelBooking(bookingId);
+          toast.success("Reservation cancelled successfully.", "Cancelled");
+          fetchData();
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Failed to cancel reservation", "Cancel Failed");
+        }
+      },
+    });
   };
 
   return (
@@ -777,6 +817,12 @@ export default function StudentDashboard({ onLogout, user }) {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        {...confirmModal}
+        onCancel={() => setConfirmModal({ open: false })}
+      />
     </div>
   );
 }
