@@ -219,6 +219,17 @@ export default function Welcome({ onNavigate }) {
           </div>
         </div>
       </footer>
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className={`fixed bottom-8 right-8 z-50 w-14 h-14 flex items-center justify-center rounded-full bg-amber-500 text-black shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-amber-400 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(245,158,11,0.4)] transition-all duration-300 ${
+          isScrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+        }`}
+        aria-label="Scroll to top"
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: "28px" }}>arrow_upward</span>
+      </button>
     </div>
   );
 }
