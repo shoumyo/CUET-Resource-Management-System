@@ -234,15 +234,15 @@ export default function TeacherDashboard({ onLogout, user }) {
           ))}
         </ul>
         <div className="mt-auto pt-md border-t border-outline-variant/40">
-          <div className="flex items-center gap-sm mb-sm">
-            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-sm">
+          <button onClick={() => setProfileOpen(true)} className="w-full flex items-center gap-sm mb-sm p-2 rounded-xl hover:bg-surface-container-low transition-colors text-left">
+            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0">
               {user?.name?.charAt(0)}
             </div>
-            <div className="flex flex-col">
-              <span className="text-[13px] font-semibold text-on-surface">{user?.name}</span>
-              <span className="text-[11px] text-on-surface-variant">Teacher Portal</span>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-[13px] font-semibold text-on-surface truncate">{user?.name}</span>
+              <span className="text-[11px] text-on-surface-variant truncate">Teacher Portal</span>
             </div>
-          </div>
+          </button>
           <button
             onClick={onLogout}
             className="w-full text-left flex items-center gap-md px-md py-[10px] text-error hover:bg-red-50 rounded-xl transition-all duration-200 text-[13px] font-medium"
@@ -264,13 +264,20 @@ export default function TeacherDashboard({ onLogout, user }) {
               {activeNav === "requests" ? "Students need your approval to proceed" : "Past bookings you have reviewed"}
             </p>
           </div>
-          <div className="flex items-center gap-sm">
-            <button onClick={fetchRequests} className="w-9 h-9 rounded-xl hover:bg-surface-container-low flex items-center justify-center transition-colors" title="Refresh">
-              <span className="material-symbols-outlined text-[20px] text-on-surface-variant">refresh</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button onClick={fetchRequests} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
+              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">refresh</span>
+              <span className="text-[13px] font-semibold text-on-surface-variant hidden sm:block">Refresh</span>
             </button>
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[16px] shadow-sm cursor-pointer hover:bg-primary/20 transition-colors" onClick={() => setProfileOpen(true)}>
-              {user?.name?.charAt(0)}
-            </div>
+            <button onClick={() => setProfileOpen(true)} className="flex items-center gap-sm p-1.5 pr-3 rounded-xl hover:bg-surface-container-low transition-colors border border-transparent hover:border-outline-variant/30 text-left bg-white shadow-sm">
+              <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0">
+                {user?.name?.charAt(0)}
+              </div>
+              <div className="hidden sm:flex flex-col overflow-hidden">
+                <span className="text-[13px] font-semibold text-on-surface truncate leading-tight">{user?.name}</span>
+                <span className="text-[11px] text-on-surface-variant truncate leading-tight">Teacher Portal</span>
+              </div>
+            </button>
           </div>
         </header>
 
