@@ -471,49 +471,72 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
                 {filtered.map((resource, i) => (
                   <div
                     key={resource.resourceId}
-                    className="card-level-1 overflow-hidden p-0 animate-slide-up"
+                    className="card-level-1 overflow-hidden p-0 animate-slide-up flex flex-col"
                     style={{ animationDelay: `${i * 0.05}s`, animationFillMode: "both" }}
                   >
-                    <div className="h-2 gradient-primary rounded-t-lg" />
-                    <div className="p-5">
-                      <div className="flex items-start justify-between mb-3">
+                    <div className="h-2 gradient-primary rounded-t-lg flex-shrink-0" />
+                    <div className="p-5 flex-1 flex flex-col">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-primary" style={{ fontSize: "22px" }}>
+                          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                            <span className="material-symbols-outlined text-white" style={{ fontSize: "24px" }}>
                               {typeIcons[resource.type] || "domain"}
                             </span>
                           </div>
                           <div>
                             <h3 className="text-[16px] font-bold text-on-surface leading-tight">{resource.name}</h3>
-                            <p className="text-[12px] text-on-surface-variant mt-0.5">{resource.type}</p>
+                            <p className="text-[12px] text-primary font-medium mt-0.5">{resource.type}</p>
                           </div>
                         </div>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${resource.currentlyAvailable ? "badge-available" : "badge-unavailable"}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-bold tracking-wider ${resource.currentlyAvailable ? "badge-available" : "badge-unavailable"}`}>
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: resource.currentlyAvailable ? "#10b981" : "#ef4444" }} />
                           {resource.currentlyAvailable ? "AVAILABLE" : "IN USE"}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 mb-4 text-[13px] text-on-surface-variant">
-                        <div className="flex items-center gap-1">
-                          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>group</span>
-                          Capacity: {resource.capacity}
+                      {/* Info Tiles */}
+                      <div className="grid grid-cols-3 gap-2 mb-5">
+                        {/* Square Box 1: Location */}
+                        <div className="aspect-square bg-blue-50 border border-blue-100 rounded-xl flex flex-col items-center justify-center p-1 text-center transition-transform hover:scale-105">
+                          <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mb-1.5">
+                            <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "16px" }}>{resource.indoor ? "home" : "park"}</span>
+                          </div>
+                          <span className="text-[9px] text-blue-600 uppercase tracking-wider font-bold">Location</span>
+                          <span className="text-[12px] font-bold text-on-surface mt-0.5">{resource.indoor ? "Indoor" : "Outdoor"}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>{resource.indoor ? "home" : "park"}</span>
-                          {resource.indoor ? "Indoor" : "Outdoor"}
+
+                        {/* Square Box 2: Capacity */}
+                        <div className="aspect-square bg-emerald-50 border border-emerald-100 rounded-xl flex flex-col items-center justify-center p-1 text-center transition-transform hover:scale-105">
+                          <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center mb-1.5">
+                            <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: "16px" }}>groups</span>
+                          </div>
+                          <span className="text-[9px] text-emerald-700 uppercase tracking-wider font-bold">Capacity</span>
+                          <span className="text-[12px] font-bold text-on-surface mt-0.5">{resource.capacity}</span>
+                        </div>
+
+                        {/* Square Box 3: Timing */}
+                        <div className="aspect-square bg-amber-50 border border-amber-100 rounded-xl flex flex-col items-center justify-center p-1 text-center transition-transform hover:scale-105">
+                          <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center mb-1.5">
+                            <span className="material-symbols-outlined text-amber-600" style={{ fontSize: "16px" }}>schedule</span>
+                          </div>
+                          <span className="text-[9px] text-amber-700 uppercase tracking-wider font-bold">Hours</span>
+                          <span className="text-[11px] font-bold text-on-surface mt-0.5 leading-tight">
+                            {resource.indoor ? `${resource.openTime?.substring(0,5) || "09:00"}-${resource.closeTime?.substring(0,5) || "17:00"}` : "24/7"}
+                          </span>
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => openPanel(resource)}
-                        className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-250 gradient-primary text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <span className="flex items-center justify-center gap-2">
-                          <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>event_available</span>
-                          Book Now
-                        </span>
-                      </button>
+                      <div className="mt-auto">
+                        <button
+                          onClick={() => openPanel(resource)}
+                          className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-250 gradient-primary text-white hover:shadow-lg hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>event_available</span>
+                            Book Now
+                          </span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
