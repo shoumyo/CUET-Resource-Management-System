@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import cuetLogo from "./Photos/cuet-logo.png";
 import adminBldg from "./Photos/ADMINSTRATIVE_BUILDING.webp";
 import cuetImg from "./Photos/CUET.jpg";
@@ -9,7 +9,26 @@ const images = [adminBldg, cuetImg, aboutImg, landingImage];
 
 function AnimatedCounter({ target, duration = 2000 }) {
   const [count, setCount] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const counterRef = useRef(null);
+
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (counterRef.current) observer.observe(counterRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    
     let start = 0;
     const startTime = Date.now();
     const tick = () => {
@@ -20,8 +39,9 @@ function AnimatedCounter({ target, duration = 2000 }) {
       if (progress < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
-  }, [target, duration]);
-  return <span>{count}+</span>;
+  }, [isVisible, target, duration]);
+  
+  return <span ref={counterRef}>{count}+</span>;
 }
 
 export default function Welcome({ onNavigate }) {
