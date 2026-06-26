@@ -438,9 +438,8 @@ export default function AdminDashboard({ onLogout, user }) {
               <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-sm flex-shrink-0">
                 {user?.name?.charAt(0)}
               </div>
-              <div className="hidden sm:flex flex-col overflow-hidden">
-                <span className="text-[13px] font-semibold text-on-surface truncate leading-tight">{user?.name}</span>
-                <span className="text-[11px] text-on-surface-variant truncate leading-tight">System Administrator</span>
+              <div className="hidden sm:flex flex-col justify-center overflow-hidden">
+                <span className="text-[14px] font-semibold text-on-surface truncate leading-tight">{user?.name}</span>
               </div>
             </button>
           </div>
