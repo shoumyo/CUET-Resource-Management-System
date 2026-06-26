@@ -357,7 +357,7 @@ export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
                     return (
                       <div
                         key={req.bookingId}
-                        className="card-level-1 overflow-hidden animate-slide-up transition-all duration-300"
+                        className="bg-white border-2 border-outline-variant/60 shadow-md rounded-[20px] overflow-hidden animate-slide-up transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/40"
                         style={{ animationDelay: `${i * 0.06}s`, animationFillMode: "both" }}
                       >
                         {/* ── Card Header: Gradient accent + Resource type ── */}
@@ -594,7 +594,7 @@ export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {history.map((h, i) => (
-                    <div key={h.bookingId} className="card-level-1 p-4 animate-slide-up flex flex-col justify-between" style={{ animationDelay: `${(i % 10) * 0.05}s` }}>
+                    <div key={h.bookingId} className="bg-white border-2 border-outline-variant/50 shadow-sm hover:shadow-md rounded-[16px] p-4 animate-slide-up flex flex-col justify-between hover:-translate-y-1 transition-all" style={{ animationDelay: `${(i % 10) * 0.05}s` }}>
                       <div>
                         <div className="flex items-start justify-between mb-3">
                           <div>

@@ -534,7 +534,7 @@ export default function AdminDashboard({ onLogout, user, onUpdateUser }) {
                   return (
                     <div
                       key={b.bookingId}
-                      className="card-level-1 overflow-hidden animate-slide-up transition-all duration-300"
+                      className="bg-white border-2 border-outline-variant/60 shadow-md rounded-[20px] overflow-hidden animate-slide-up transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/40"
                       style={{ animationDelay: `${i * 0.06}s`, animationFillMode: "both" }}
                     >
                       {/* Card Header Gradient */}
@@ -727,7 +727,7 @@ export default function AdminDashboard({ onLogout, user, onUpdateUser }) {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {filteredBookings.map((b, i) => (
-                  <div key={b.bookingId} className="card-level-1 p-5 flex flex-col justify-between animate-slide-up hover:shadow-xl hover:-translate-y-0.5 transition-all" style={{ animationDelay: `${i * 0.03}s`, animationFillMode: "both" }}>
+                  <div key={b.bookingId} className="bg-white border-2 border-outline-variant/50 shadow-md rounded-[20px] p-5 flex flex-col justify-between animate-slide-up hover:shadow-xl hover:-translate-y-1 transition-all" style={{ animationDelay: `${i * 0.03}s`, animationFillMode: "both" }}>
                     <div>
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
