@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { getPendingAdminBookings, getAllBookings, adminApprove, adminReject, deleteBooking } from "./api/bookingApi";
-import { getAllResources, createResource, updateResource, deleteResource } from "./api/resourceApi";
-import { getAllUsers, deleteUser } from "./api/userApi";
-import { useToast } from "./components/Toast";
-import cuetLogo from "./Photos/cuet-logo.png";
-import ProfileModal from "./components/ProfileModal";
-import TextModal from "./components/TextModal";
+import { getPendingAdminBookings, getAllBookings, adminApprove, adminReject, deleteBooking } from "../api/bookingApi";
+import { getAllResources, createResource, updateResource, deleteResource } from "../api/resourceApi";
+import { getAllUsers, deleteUser } from "../api/userApi";
+import { useToast } from "../components/Toast";
+import cuetLogo from "../assets/cuet-logo.png";
+import ProfileModal from "../components/ProfileModal";
+import TextModal from "../components/TextModal";
 
 const statusConfig = {
   HELD: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "schedule" },

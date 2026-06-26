@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { getPendingReferenceBookings, teacherApprove, teacherReject, getTeacherHistory } from "./api/bookingApi";
-import { useToast } from "./components/Toast";
-import cuetLogo from "./Photos/cuet-logo.png";
-import ProfileModal from "./components/ProfileModal";
-import TextModal from "./components/TextModal";
+import { getPendingReferenceBookings, teacherApprove, teacherReject, getTeacherHistory } from "../api/bookingApi";
+import { useToast } from "../components/Toast";
+import cuetLogo from "../assets/cuet-logo.png";
+import ProfileModal from "../components/ProfileModal";
+import TextModal from "../components/TextModal";
 
 const statusConfig = {
   PENDING_REFERENCE: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "hourglass_top", label: "Awaiting Your Review" },

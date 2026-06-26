@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import cuetLogo from "./Photos/cuet-logo.png";
-import adminBldg from "./Photos/ADMINSTRATIVE_BUILDING.webp";
-import cuetImg from "./Photos/CUET.jpg";
-import aboutImg from "./Photos/about.jpg";
-import landingImage from "./Photos/images (1).jpg";
+import cuetLogo from "../assets/cuet-logo.png";
+import adminBldg from "../assets/ADMINSTRATIVE_BUILDING.webp";
+import cuetImg from "../assets/CUET.jpg";
+import aboutImg from "../assets/about.jpg";
+import landingImage from "../assets/landingImage.jpg";
 
 const images = [adminBldg, cuetImg, aboutImg, landingImage];
 

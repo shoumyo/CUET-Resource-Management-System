@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { login, register } from "./api/authApi";
-import { useToast } from "./components/Toast";
-import cuetLogo from "./Photos/cuet-logo.png";
-import adminBldg from "./Photos/ADMINSTRATIVE_BUILDING.webp";
-import cuetImg from "./Photos/CUET.jpg";
-import aboutImg from "./Photos/about.jpg";
+import { login, register } from "../api/authApi";
+import { useToast } from "../components/Toast";
+import cuetLogo from "../assets/cuet-logo.png";
+import adminBldg from "../assets/ADMINSTRATIVE_BUILDING.webp";
+import cuetImg from "../assets/CUET.jpg";
+import aboutImg from "../assets/about.jpg";
 
 const roleConfig = {
   STUDENT: {

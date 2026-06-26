@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import { getAllResources } from "./api/resourceApi";
-import { createHold, submitBooking, getMyBookings, getBookingsForResourceOnDate, studentCancelBooking } from "./api/bookingApi";
-import { getTeachers } from "./api/userApi";
-import { useToast } from "./components/Toast";
-import cuetLogo from "./Photos/cuet-logo.png";
-import ProfileModal from "./components/ProfileModal";
-import TextModal from "./components/TextModal";
+import { getAllResources } from "../api/resourceApi";
+import { getTeachers } from "../api/userApi";
+import { createHold, submitBooking, getMyBookings, getBookingsForResourceOnDate, studentCancelBooking } from "../api/bookingApi";
+import { useToast } from "../components/Toast";
+import cuetLogo from "../assets/cuet-logo.png";
+import ProfileModal from "../components/ProfileModal";
+import TextModal from "../components/TextModal";
 
 const statusConfig = {
   AVAILABLE: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: "check_circle" },

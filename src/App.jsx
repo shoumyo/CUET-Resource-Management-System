@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { ToastProvider } from "./components/Toast";
-import Welcome from "./Welcome";
-import Login from "./Login";
-import StudentDashboard from "./StudentDashboard";
-import TeacherDashboard from "./TeacherDashboard";
-import AdminDashboard from "./AdminDashboard";
+import Welcome from "./pages/Welcome";
+import Login from "./pages/Login";
+import StudentDashboard from "./pages/StudentDashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function AppContent() {
   const [screen, setScreen] = useState("welcome");
