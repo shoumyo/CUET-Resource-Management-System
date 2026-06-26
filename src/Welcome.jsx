@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import cuetLogo from "./Photos/cuet-logo.png";
+import adminBldg from "./Photos/ADMINSTRATIVE_BUILDING.webp";
+import cuetImg from "./Photos/CUET.jpg";
+import aboutImg from "./Photos/about.jpg";
 import landingImage from "./Photos/images (1).jpg";
+
+const images = [adminBldg, cuetImg, aboutImg, landingImage];
 
 function AnimatedCounter({ target, duration = 2000 }) {
   const [count, setCount] = useState(0);
@@ -21,104 +26,141 @@ function AnimatedCounter({ target, duration = 2000 }) {
 
 export default function Welcome({ onNavigate }) {
   const [visible, setVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+
   useEffect(() => { setVisible(true); }, []);
 
-  return (
-    <div className="bg-surface text-on-surface font-body-lg text-body-lg min-h-screen flex flex-col pt-16">
-      {/* TopNavBar */}
-      <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 bg-white/80 backdrop-blur-xl border-b border-outline-variant/30 transition-all">
-        <div className="flex items-center gap-md">
-          <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center text-white shadow-sm overflow-hidden p-0.5">
-            <img src={cuetLogo} alt="CUET Logo" className="w-full h-full object-contain bg-white rounded-[10px]" />
-          </div>
-          <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight">CUET RESOURCE BOOKING SYSTEM</span>
-        </div>
-        <div className="flex items-center gap-sm">
-          <button
-            id="welcome-signin-btn"
-            onClick={() => onNavigate("login")}
-            className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors px-md py-sm"
-          >
-            Sign In
-          </button>
-          <button
-            id="welcome-getstarted-btn"
-            onClick={() => onNavigate("login")}
-            className="gradient-primary text-white font-label-md text-label-md px-lg py-sm rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-200"
-          >
-            Get Started
-          </button>
-        </div>
-      </nav>
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-      {/* Main Content */}
-      <main className="flex-grow flex flex-col items-center justify-center w-full max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-xl md:py-[80px]">
-        {/* Hero Section */}
-        <section className={`w-full flex flex-col md:flex-row items-center gap-xl md:gap-[80px] mb-24 transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <div className="w-full md:w-1/2 flex flex-col items-start gap-lg text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/8 text-primary text-[12px] font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft" />
-              System Live — Ready to Book
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const nextSlide = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  const prevSlide = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+
+  return (
+    <div className="bg-surface text-on-surface font-body-lg text-body-lg min-h-screen flex flex-col relative">
+      
+      {/* FULL SCREEN HERO CAROUSEL */}
+      <section className="relative w-full h-screen min-h-[600px] flex items-center overflow-hidden">
+        {/* Background Images */}
+        {images.map((img, idx) => (
+          <div 
+            key={idx}
+            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${idx === currentImageIndex ? "opacity-100" : "opacity-0"}`}
+          >
+            <img src={img} alt="Slide" className={`w-full h-full object-cover transition-transform duration-[6000ms] ${idx === currentImageIndex ? "scale-105" : "scale-100"}`} />
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-black/60" /> 
+          </div>
+        ))}
+
+        {/* TopNavBar - Fixed and dynamic styling */}
+        <nav className={`fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md border-b border-outline-variant/30' : 'bg-transparent'}`}>
+          <div className="flex items-center gap-md">
+            <div className={`w-10 h-10 flex items-center justify-center p-0.5 rounded-lg ${isScrolled ? 'bg-emerald-50' : ''}`}>
+              <img src={cuetLogo} alt="CUET Logo" className={`w-full h-full object-contain ${!isScrolled && 'drop-shadow-md'}`} />
             </div>
-            <h1 className="text-[42px] md:text-[52px] leading-tight font-extrabold text-on-surface tracking-tight">
-              CUET RESOURCE
-              <span className="block text-primary">BOOKING SYSTEM</span>
+            <span className={`font-headline-md text-[20px] font-bold tracking-tight hidden sm:block transition-colors duration-300 ${isScrolled ? 'text-primary' : 'text-white drop-shadow-md'}`}>
+              CUET Resource Booking System
+            </span>
+          </div>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => onNavigate("login")}
+              className={`font-bold text-[15px] transition-colors duration-300 ${isScrolled ? 'text-on-surface hover:text-primary' : 'text-white/90 hover:text-white'}`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => onNavigate("login")}
+              className="bg-amber-500 text-black font-bold text-[15px] px-6 py-2 rounded-full hover:bg-amber-400 hover:shadow-lg transition-all duration-200"
+            >
+              Get Started
+            </button>
+          </div>
+        </nav>
+
+        {/* Left Arrow */}
+        <button onClick={prevSlide} className="absolute left-4 md:left-8 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 border border-white/20 backdrop-blur-md transition-all">
+          <span className="material-symbols-outlined">chevron_left</span>
+        </button>
+
+        {/* Right Arrow */}
+        <button onClick={nextSlide} className="absolute right-4 md:right-8 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 border border-white/20 backdrop-blur-md transition-all">
+          <span className="material-symbols-outlined">chevron_right</span>
+        </button>
+
+        {/* Hero Text Content */}
+        <div className={`relative z-10 w-full max-w-[1440px] mx-auto px-margin-mobile md:px-[120px] transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+          <div className="max-w-3xl text-left">
+            <h1 className="text-[52px] md:text-[72px] font-extrabold text-white leading-[1.1] mb-6 drop-shadow-lg tracking-tight">
+              Elevate Campus <br /> Booking.
             </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg leading-relaxed">
+            <p className="text-[18px] md:text-[22px] text-white/90 mb-10 drop-shadow-md leading-relaxed">
               Efficiently manage and reserve campus facilities, auditoriums, and academic resources through our secure, integrated platform designed specifically for university operations.
             </p>
-            <div className="flex flex-wrap gap-3 mt-sm">
+            <div className="flex flex-wrap gap-4">
               <button
-                id="hero-getstarted-btn"
                 onClick={() => onNavigate("login")}
-                className="gradient-primary text-white font-label-md text-[14px] px-7 py-3 rounded-xl hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                className="bg-amber-500 text-black font-bold text-[16px] px-10 py-4 rounded-full hover:bg-amber-400 shadow-lg hover:shadow-amber-500/30 transition-all duration-200 hover:scale-[1.02]"
               >
-                Get Started →
+                Get Started
               </button>
-              <button className="bg-white text-on-surface-variant border border-outline-variant/50 font-label-md text-[14px] px-7 py-3 rounded-xl hover:bg-surface-container-low hover:border-outline transition-all duration-200">
+              <button 
+                onClick={() => document.getElementById("stats-section")?.scrollIntoView({ behavior: "smooth" })}
+                className="bg-transparent border-2 border-white/70 text-white font-bold text-[16px] px-10 py-4 rounded-full hover:bg-white/10 transition-all duration-200 backdrop-blur-sm"
+              >
                 Learn More
               </button>
             </div>
-
-            {/* Stats */}
-            <div className="flex gap-8 mt-6 pt-6 border-t border-outline-variant/30 w-full">
-              {[
-                { num: 15, label: "Campus Venues" },
-                { num: 500, label: "Bookings Made" },
-                { num: 50, label: "Active Users" },
-              ].map((s) => (
-                <div key={s.label}>
-                  <p className="text-[28px] font-bold text-primary">
-                    <AnimatedCounter target={s.num} />
-                  </p>
-                  <p className="text-[12px] text-on-surface-variant font-medium">{s.label}</p>
-                </div>
-              ))}
-            </div>
           </div>
+        </div>
 
-          <div className="w-full md:w-1/2 h-[400px] md:h-[500px] relative rounded-2xl overflow-hidden border border-outline-variant/30 shadow-2xl shadow-primary/5">
-            <img
-              alt="CUET Campus"
-              className="w-full h-full object-cover"
-              src={landingImage}
+        {/* Dots */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-3 z-20">
+          {images.map((_, idx) => (
+            <button 
+              key={idx} 
+              className={`h-2.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? "w-10 bg-amber-500" : "w-2.5 bg-white/50 hover:bg-white/80"}`} 
+              onClick={() => setCurrentImageIndex(idx)} 
+              aria-label={`Go to slide ${idx + 1}`}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-            {/* Floating card */}
-            <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-lg rounded-xl p-4 border border-white/50 shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: "22px" }}>verified</span>
-                </div>
-                <div>
-                  <p className="text-[13px] font-semibold text-on-surface">Instant Booking Confirmation</p>
-                  <p className="text-[11px] text-on-surface-variant">Get approved in minutes with our streamlined workflow</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+          ))}
+        </div>
+      </section>
 
+      {/* Stats Section */}
+      <section id="stats-section" className="w-full bg-white py-16 border-b border-outline-variant/30 shadow-sm z-10 relative">
+        <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop flex flex-wrap justify-around items-center gap-8 text-center">
+          {[
+            { num: 15, label: "Campus Venues" },
+            { num: 500, label: "Bookings Made" },
+            { num: 50, label: "Active Users" },
+          ].map((s) => (
+            <div key={s.label} className="flex flex-col items-center">
+              <p className="text-[48px] font-extrabold text-amber-500 mb-2 drop-shadow-sm">
+                <AnimatedCounter target={s.num} />
+              </p>
+              <p className="text-[16px] text-on-surface-variant font-bold tracking-widest uppercase">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Main Content Below Hero */}
+      <main className="flex-grow flex flex-col items-center justify-center w-full max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-xl md:py-[100px]">
         {/* How it Works Section */}
         <section className="w-full flex flex-col items-center gap-xl">
           <div className="text-center mb-md">
@@ -126,7 +168,7 @@ export default function Welcome({ onNavigate }) {
             <h2 className="text-[32px] font-bold text-on-surface tracking-tight">How it Works</h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-2 max-w-md mx-auto">Three simple steps to secure your required campus resources.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
             {[
               { icon: "login", title: "1. Sign In", desc: "Authenticate using your official CUET institutional credentials to access the system.", color: "bg-blue-50 text-blue-600" },
               { icon: "date_range", title: "2. Choose Resource", desc: "Browse available rooms, auditoriums, and equipment, then select your required dates.", color: "bg-purple-50 text-purple-600" },
@@ -134,13 +176,12 @@ export default function Welcome({ onNavigate }) {
             ].map((step, i) => (
               <div
                 key={step.title}
-                className="card-level-1 p-6 flex flex-col items-center text-center animate-slide-up"
-                style={{ animationDelay: `${i * 0.1}s`, animationFillMode: "both" }}
+                className="card-level-1 p-8 flex flex-col items-center text-center hover:-translate-y-2 transition-all duration-300 hover:shadow-xl border border-outline-variant/30"
               >
-                <div className={`w-14 h-14 rounded-xl ${step.color} flex items-center justify-center mb-4`}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "28px", fontVariationSettings: "'FILL' 1" }}>{step.icon}</span>
+                <div className={`w-16 h-16 rounded-2xl ${step.color} flex items-center justify-center mb-6`}>
+                  <span className="material-symbols-outlined" style={{ fontSize: "32px", fontVariationSettings: "'FILL' 1" }}>{step.icon}</span>
                 </div>
-                <h3 className="text-[18px] font-bold text-on-surface mb-2">{step.title}</h3>
+                <h3 className="text-[20px] font-bold text-on-surface mb-3">{step.title}</h3>
                 <p className="text-[14px] text-on-surface-variant leading-relaxed">{step.desc}</p>
               </div>
             ))}
@@ -149,10 +190,10 @@ export default function Welcome({ onNavigate }) {
       </main>
 
       {/* Footer */}
-      <footer className="w-full bg-white/50 backdrop-blur-lg border-t border-outline-variant/30 py-md mt-auto">
-        <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop flex justify-between items-center">
+      <footer className="w-full bg-surface-container-lowest border-t border-outline-variant/30 py-lg mt-auto">
+        <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop flex flex-col sm:flex-row justify-between items-center gap-4">
           <span className="font-label-sm text-label-sm text-on-surface-variant">© 2024 CUET Resource Booking System. All rights reserved.</span>
-          <div className="flex gap-md">
+          <div className="flex gap-lg">
             <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy</a>
             <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms</a>
           </div>
