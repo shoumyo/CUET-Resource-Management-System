@@ -574,21 +574,21 @@ export default function StudentDashboard({ onLogout, user }) {
                               {b.purpose && (
                                 <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100/50">
                                   <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Purpose</p>
-                                  <p className="text-[13px] text-on-surface leading-relaxed">{b.purpose}</p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{b.purpose}</p>
                                 </div>
                               )}
 
                               {b.teacherRemarks && (
                                 <div className={`mt-3 rounded-xl p-3 border ${b.status === 'REJECTED' && !b.adminRemarks ? 'bg-red-50/50 border-red-200/50' : 'bg-purple-50/50 border-purple-200/50'}`}>
                                   <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${b.status === 'REJECTED' && !b.adminRemarks ? 'text-red-600' : 'text-purple-600'}`}>Teacher's Note</p>
-                                  <p className="text-[13px] text-on-surface leading-relaxed">{b.teacherRemarks}</p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{b.teacherRemarks}</p>
                                 </div>
                               )}
 
                               {b.adminRemarks && (
                                 <div className={`mt-3 rounded-xl p-3 border ${b.status === 'REJECTED' ? 'bg-red-50/50 border-red-200/50' : 'bg-emerald-50/50 border-emerald-200/50'}`}>
                                   <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${b.status === 'REJECTED' ? 'text-red-600' : 'text-emerald-600'}`}>Admin's Note</p>
-                                  <p className="text-[13px] text-on-surface leading-relaxed">{b.adminRemarks}</p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{b.adminRemarks}</p>
                                 </div>
                               )}
                             </div>

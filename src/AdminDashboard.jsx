@@ -614,7 +614,7 @@ export default function AdminDashboard({ onLogout, user }) {
                                     {b.teacherRemarks && (
                                       <div className="mt-2 p-2 bg-purple-100/50 rounded-lg">
                                         <p className="text-[11px] font-bold text-purple-600 mb-0.5">Teacher's Note:</p>
-                                        <p className="text-[12px] text-purple-800 italic leading-snug">"{b.teacherRemarks}"</p>
+                                        <p className="text-[12px] text-purple-800 italic leading-snug break-words whitespace-pre-wrap">"{b.teacherRemarks}"</p>
                                       </div>
                                     )}
                                   </div>
@@ -623,7 +623,7 @@ export default function AdminDashboard({ onLogout, user }) {
                               {b.purpose && (
                                 <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex-1">
                                   <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Purpose</p>
-                                  <p className="text-[13px] text-on-surface">{b.purpose}</p>
+                                  <p className="text-[13px] text-on-surface break-words whitespace-pre-wrap">{b.purpose}</p>
                                 </div>
                               )}
                             </div>

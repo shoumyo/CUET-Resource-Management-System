@@ -427,7 +427,7 @@ export default function TeacherDashboard({ onLogout, user }) {
                                     <span className="material-symbols-outlined text-amber-500 flex-shrink-0 mt-0.5" style={{ fontSize: "18px" }}>description</span>
                                     <div>
                                       <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Purpose of Booking</p>
-                                      <p className="text-[13px] text-on-surface leading-relaxed">{req.purpose}</p>
+                                      <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{req.purpose}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -591,7 +591,7 @@ export default function TeacherDashboard({ onLogout, user }) {
                         {h.teacherRemarks && (
                           <div className="p-3 rounded-lg bg-surface-container-low/50 border border-outline-variant/30 mt-auto">
                             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Your Note</p>
-                            <p className="text-[12px] text-on-surface italic">"{h.teacherRemarks}"</p>
+                            <p className="text-[12px] text-on-surface italic break-words whitespace-pre-wrap">"{h.teacherRemarks}"</p>
                           </div>
                         )}
                       </div>
