@@ -17,6 +17,41 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final com.cuet.booking.service.UserService userService;
+    private final com.cuet.booking.security.JwtUtil jwtUtil;
+
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getMyProfile(jakarta.servlet.http.HttpServletRequest request) {
+        Long userId = extractUserId(request);
+        User u = userService.getById(userId);
+        return ResponseEntity.ok(Map.of(
+                "id", u.getUserId(),
+                "name", u.getName(),
+                "email", u.getEmail(),
+                "role", u.getRole().name()
+        ));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<Map<String, Object>> updateMyProfile(@RequestBody com.cuet.booking.dto.ProfileUpdateRequest req, jakarta.servlet.http.HttpServletRequest request) {
+        Long userId = extractUserId(request);
+        User u = userService.updateProfile(userId, req);
+        return ResponseEntity.ok(Map.of(
+                "id", u.getUserId(),
+                "name", u.getName(),
+                "email", u.getEmail(),
+                "role", u.getRole().name(),
+                "message", "Profile updated successfully"
+        ));
+    }
+
+    private Long extractUserId(jakarta.servlet.http.HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return jwtUtil.extractUserId(authHeader.substring(7));
+        }
+        throw new IllegalStateException("Not authorized");
+    }
 
     @GetMapping("/teachers")
     public ResponseEntity<List<Map<String, Object>>> getAllTeachers() {

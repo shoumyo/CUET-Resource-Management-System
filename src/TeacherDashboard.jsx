@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { getPendingReferenceBookings, teacherApprove, teacherReject } from "./api/bookingApi";
+import { getPendingReferenceBookings, teacherApprove, teacherReject, getTeacherHistory } from "./api/bookingApi";
 import { useToast } from "./components/Toast";
 import cuetLogo from "./Photos/cuet-logo.png";
+import ProfileModal from "./components/ProfileModal";
 
 const statusConfig = {
   PENDING_REFERENCE: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "hourglass_top", label: "Awaiting Your Review" },
@@ -79,7 +80,7 @@ function getDuration(start, end) {
 }
 
 // Confirmation Modal
-function ConfirmModal({ open, title, message, icon, iconColor, iconBg, onConfirm, onCancel, confirmText, confirmClass }) {
+function ConfirmModal({ open, title, message, icon, iconColor, iconBg, onConfirm, onCancel, confirmText, confirmClass, showInput, inputValue, onInputChange, inputPlaceholder }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
@@ -90,6 +91,9 @@ function ConfirmModal({ open, title, message, icon, iconColor, iconBg, onConfirm
         </div>
         <h3 className="text-[18px] font-bold text-on-surface mb-1">{title}</h3>
         <p className="text-[14px] text-on-surface-variant mb-5 leading-relaxed">{message}</p>
+        
+        {/* showInput removed from ConfirmModal */}
+
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 py-2.5 border border-outline-variant/50 rounded-xl text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container-low transition-all">
             Cancel
@@ -107,8 +111,11 @@ export default function TeacherDashboard({ onLogout, user }) {
   const toast = useToast();
   const [activeNav, setActiveNav] = useState("requests");
   const [requests, setRequests] = useState([]);
+  const [history, setHistory] = useState([]);
   const [expandedCard, setExpandedCard] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ open: false });
+  const [remarksMap, setRemarksMap] = useState({});
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -116,9 +123,24 @@ export default function TeacherDashboard({ onLogout, user }) {
 
   const fetchRequests = async () => {
     try {
+      const now = new Date();
+      const sortData = (data) => data.sort((a, b) => {
+        const timeA = new Date(a.startTime);
+        const timeB = new Date(b.startTime);
+        const isPastA = timeA < now;
+        const isPastB = timeB < now;
+        if (isPastA && !isPastB) return 1;
+        if (!isPastA && isPastB) return -1;
+        if (!isPastA && !isPastB) return timeA - timeB;
+        return timeB - timeA;
+      });
+
       if (activeNav === "requests") {
         const data = await getPendingReferenceBookings();
-        setRequests(data);
+        setRequests(sortData(data));
+      } else if (activeNav === "history") {
+        const data = await getTeacherHistory();
+        setHistory(sortData(data));
       }
     } catch (err) {
       console.error("Failed to fetch teacher requests", err);
@@ -139,8 +161,9 @@ export default function TeacherDashboard({ onLogout, user }) {
       onConfirm: async () => {
         setConfirmModal({ open: false });
         try {
-          await teacherApprove(req.bookingId);
+          await teacherApprove(req.bookingId, remarksMap[req.bookingId]);
           toast.success("Booking approved and forwarded to admin!", "Approved ✓");
+          setRemarksMap(prev => ({ ...prev, [req.bookingId]: "" }));
           fetchRequests();
         } catch (err) {
           toast.error("Error approving: " + (err.response?.data?.message || err.message));
@@ -162,8 +185,9 @@ export default function TeacherDashboard({ onLogout, user }) {
       onConfirm: async () => {
         setConfirmModal({ open: false });
         try {
-          await teacherReject(req.bookingId);
+          await teacherReject(req.bookingId, remarksMap[req.bookingId]);
           toast.warning("Booking rejected.", "Rejected");
+          setRemarksMap(prev => ({ ...prev, [req.bookingId]: "" }));
           fetchRequests();
         } catch (err) {
           toast.error("Error rejecting: " + (err.response?.data?.message || err.message));
@@ -192,6 +216,7 @@ export default function TeacherDashboard({ onLogout, user }) {
         <ul className="flex flex-col gap-xs flex-grow">
           {[
             { id: "requests", icon: "assignment", label: "Reference Requests" },
+            { id: "history", icon: "history", label: "Review History" },
           ].map(({ id, icon, label }) => (
             <li key={id}>
               <a
@@ -232,14 +257,18 @@ export default function TeacherDashboard({ onLogout, user }) {
       <div className="flex-1 flex flex-col md:ml-[260px] min-h-screen">
         <header className="bg-white/70 backdrop-blur-xl border-b border-outline-variant/30 px-margin-mobile md:px-margin-desktop h-16 flex items-center justify-between sticky top-0 z-30">
           <div>
-            <h2 className="text-[22px] font-bold text-on-surface tracking-tight">Reference Requests</h2>
-            <p className="text-[12px] text-on-surface-variant mt-0.5">Students need your approval to proceed</p>
+            <h2 className="text-[22px] font-bold text-on-surface tracking-tight">
+              {activeNav === "requests" ? "Reference Requests" : "Review History"}
+            </h2>
+            <p className="text-[12px] text-on-surface-variant mt-0.5">
+              {activeNav === "requests" ? "Students need your approval to proceed" : "Past bookings you have reviewed"}
+            </p>
           </div>
           <div className="flex items-center gap-sm">
             <button onClick={fetchRequests} className="w-9 h-9 rounded-xl hover:bg-surface-container-low flex items-center justify-center transition-colors" title="Refresh">
-              <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: "20px" }}>refresh</span>
+              <span className="material-symbols-outlined text-[20px] text-on-surface-variant">refresh</span>
             </button>
-            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[16px] shadow-sm cursor-pointer hover:bg-primary/20 transition-colors" onClick={() => setProfileOpen(true)}>
               {user?.name?.charAt(0)}
             </div>
           </div>
@@ -338,50 +367,7 @@ export default function TeacherDashboard({ onLogout, user }) {
                             </span>
                           </div>
 
-                          {/* ── Info Grid ── */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-
-                            {/* Student Info */}
-                            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-50/50 border border-blue-100/70">
-                              <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "18px" }}>person</span>
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Student</p>
-                                <p className="text-[14px] font-semibold text-on-surface leading-snug truncate">{req.studentName}</p>
-                                <p className="text-[11px] text-on-surface-variant truncate mt-0.5">{req.studentEmail}</p>
-                              </div>
-                            </div>
-
-                            {/* Schedule Info */}
-                            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100/70">
-                              <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: "18px" }}>event</span>
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Schedule</p>
-                                <p className="text-[14px] font-semibold text-on-surface leading-snug">{formatDate(req.startTime)}</p>
-                                <p className="text-[11px] text-on-surface-variant mt-0.5">
-                                  {formatTime(req.startTime)} — {formatTime(req.endTime)} · {getDuration(req.startTime, req.endTime)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* ── Purpose Section ── */}
-                          {req.purpose && (
-                            <div className="p-3.5 rounded-xl bg-amber-50/40 border border-amber-100/60 mb-4">
-                              <div className="flex items-start gap-2.5">
-                                <span className="material-symbols-outlined text-amber-500 flex-shrink-0 mt-0.5" style={{ fontSize: "18px" }}>description</span>
-                                <div>
-                                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Purpose of Booking</p>
-                                  <p className="text-[13px] text-on-surface leading-relaxed">{req.purpose}</p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* ── Expandable Details ── */}
+                          {/* ── Expandable Details Button ── */}
                           <button
                             onClick={() => toggleExpand(req.bookingId)}
                             className="w-full flex items-center justify-center gap-1.5 text-[12px] font-semibold text-primary/70 hover:text-primary py-1.5 rounded-lg hover:bg-primary/5 transition-all mb-3"
@@ -395,11 +381,64 @@ export default function TeacherDashboard({ onLogout, user }) {
                           <div
                             className="overflow-hidden transition-all duration-300 ease-in-out"
                             style={{
-                              maxHeight: isExpanded ? "300px" : "0px",
+                              maxHeight: isExpanded ? "1000px" : "0px",
                               opacity: isExpanded ? 1 : 0,
                             }}
                           >
-                            <div className="pt-3 border-t border-outline-variant/30">
+                            <div className="pt-3 border-t border-outline-variant/30 mb-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                {/* Student Info */}
+                                <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-50/50 border border-blue-100/70">
+                                  <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "18px" }}>school</span>
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Requested By</p>
+                                    <p className="text-[14px] font-semibold text-on-surface leading-snug truncate">{req.studentName}</p>
+                                    <p className="text-[11px] text-on-surface-variant truncate mt-0.5">{req.studentEmail}</p>
+                                  </div>
+                                </div>
+
+                                {/* Schedule Info */}
+                                <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100/70">
+                                  <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: "18px" }}>event</span>
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Schedule</p>
+                                    <p className="text-[14px] font-semibold text-on-surface leading-snug">{formatDate(req.startTime)}</p>
+                                    <p className="text-[11px] text-on-surface-variant mt-0.5">
+                                      {formatTime(req.startTime)} — {formatTime(req.endTime)} · {getDuration(req.startTime, req.endTime)}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* ── Purpose Section ── */}
+                              {req.purpose && (
+                                <div className="p-3.5 rounded-xl bg-amber-50/40 border border-amber-100/60 mb-4">
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="material-symbols-outlined text-amber-500 flex-shrink-0 mt-0.5" style={{ fontSize: "18px" }}>description</span>
+                                    <div>
+                                      <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Purpose of Booking</p>
+                                      <p className="text-[13px] text-on-surface leading-relaxed">{req.purpose}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* ── Remarks Section ── */}
+                              <div className="mb-4">
+                                <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Add Note (Optional)</label>
+                                <textarea
+                                  className="w-full p-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-[14px] focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                                  rows="2"
+                                  placeholder="Add a message for the admin or student..."
+                                  value={remarksMap[req.bookingId] || ""}
+                                  onChange={(e) => setRemarksMap(prev => ({ ...prev, [req.bookingId]: e.target.value }))}
+                                ></textarea>
+                              </div>
+
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <div className="p-2.5 rounded-lg bg-surface-container-low/50">
                                   <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Booking ID</p>
@@ -410,8 +449,8 @@ export default function TeacherDashboard({ onLogout, user }) {
                                   <p className="text-[13px] font-semibold text-on-surface">#{req.resourceId}</p>
                                 </div>
                                 <div className="p-2.5 rounded-lg bg-surface-container-low/50">
-                                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Duration</p>
-                                  <p className="text-[13px] font-semibold text-on-surface">{getDuration(req.startTime, req.endTime)}</p>
+                                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Resource Type</p>
+                                  <p className="text-[13px] font-semibold text-on-surface">{req.resourceType}</p>
                                 </div>
                                 <div className="p-2.5 rounded-lg bg-surface-container-low/50">
                                   <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Submitted</p>
@@ -491,14 +530,77 @@ export default function TeacherDashboard({ onLogout, user }) {
               )}
             </div>
           )}
+
+          {activeNav === "history" && (
+            <div className="animate-fade-in space-y-5">
+              {/* Stats Box */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                <div className="card-level-1 p-5 border-l-4 border-l-blue-500 animate-slide-up">
+                  <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Reviewed</p>
+                  <p className="text-[32px] font-bold text-blue-600 leading-none">{history.length}</p>
+                </div>
+                <div className="card-level-1 p-5 border-l-4 border-l-emerald-500 animate-slide-up" style={{ animationDelay: "0.05s" }}>
+                  <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Approved</p>
+                  <p className="text-[32px] font-bold text-emerald-600 leading-none">
+                    {history.filter(h => h.status === "PENDING_ADMIN" || h.status === "CONFIRMED").length}
+                  </p>
+                </div>
+                <div className="card-level-1 p-5 border-l-4 border-l-red-500 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+                  <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Rejected</p>
+                  <p className="text-[32px] font-bold text-red-600 leading-none">
+                    {history.filter(h => h.status === "REJECTED").length}
+                  </p>
+                </div>
+              </div>
+
+              {/* History List */}
+              {history.length === 0 ? (
+                <div className="card-level-1 p-16 text-center">
+                  <div className="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center mx-auto mb-4">
+                    <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: "32px" }}>history</span>
+                  </div>
+                  <h3 className="text-[18px] font-bold text-on-surface mb-1">No History Yet</h3>
+                  <p className="text-[14px] text-on-surface-variant">You haven't reviewed any reference requests yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {history.map((h, i) => (
+                    <div key={h.bookingId} className="card-level-1 p-4 animate-slide-up flex flex-col justify-between" style={{ animationDelay: `${(i % 10) * 0.05}s` }}>
+                      <div>
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h4 className="text-[15px] font-bold text-on-surface">{h.resourceName}</h4>
+                            <p className="text-[11px] text-primary font-medium mt-0.5">Booking #{h.bookingId}</p>
+                          </div>
+                          <StatusBadge status={h.status} />
+                        </div>
+                        <div className="space-y-1.5 mb-4">
+                          <p className="text-[12px] text-on-surface-variant flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px]">person</span> {h.studentName}
+                          </p>
+                          <p className="text-[12px] text-on-surface-variant flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px]">calendar_today</span> {formatDate(h.startTime)}
+                          </p>
+                        </div>
+                        {h.teacherRemarks && (
+                          <div className="p-3 rounded-lg bg-surface-container-low/50 border border-outline-variant/30 mt-auto">
+                            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Your Note</p>
+                            <p className="text-[12px] text-on-surface italic">"{h.teacherRemarks}"</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
 
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        {...confirmModal}
-        onCancel={() => setConfirmModal({ open: false })}
-      />
+      {/* Modals */}
+      <ConfirmModal {...confirmModal} onCancel={() => setConfirmModal({ open: false })} />
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }

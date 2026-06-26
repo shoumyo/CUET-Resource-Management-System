@@ -16,6 +16,8 @@ public class BookingResponse {
     private Long   bookingId;
     private String status;
     private String purpose;
+    private String teacherRemarks;
+    private String adminRemarks;
 
     // Resource info
     private Long   resourceId;

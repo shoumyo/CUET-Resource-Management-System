@@ -73,10 +73,10 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
             <optional>true</optional>
         </dependency>
 
@@ -112,7 +112,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.32</version>
+                            <version>1.18.38</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

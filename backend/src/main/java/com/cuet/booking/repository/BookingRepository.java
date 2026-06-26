@@ -26,6 +26,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     /** Bookings awaiting the reference teacher's decision */
     List<Booking> findAllByReferenceTeacher_UserIdAndStatus(Long teacherId, BookingStatus status);
 
+    /** All bookings where the user was the reference teacher (for history) */
+    List<Booking> findAllByReferenceTeacher_UserId(Long teacherId);
+
     /* ──────────────────────────────────────────────
      * Admin / Teacher-in-charge queries
      * ────────────────────────────────────────────── */

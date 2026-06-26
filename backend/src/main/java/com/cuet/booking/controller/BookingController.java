@@ -3,6 +3,7 @@ package com.cuet.booking.controller;
 import com.cuet.booking.dto.BookingRequest;
 import com.cuet.booking.dto.BookingResponse;
 import com.cuet.booking.dto.SubmitRequest;
+import com.cuet.booking.dto.ApprovalRequest;
 import com.cuet.booking.security.JwtUtil;
 import com.cuet.booking.service.BookingService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,16 +72,24 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getPendingReferenceBookings(teacherId));
     }
 
-    @PutMapping("/{id}/teacher-approve")
-    public ResponseEntity<BookingResponse> teacherApprove(@PathVariable Long id, HttpServletRequest request) {
+    @GetMapping("/reference-history")
+    public ResponseEntity<List<BookingResponse>> getTeacherHistory(HttpServletRequest request) {
         Long teacherId = getUserIdFromRequest(request);
-        return ResponseEntity.ok(bookingService.teacherApprove(id, teacherId));
+        return ResponseEntity.ok(bookingService.getTeacherHistory(teacherId));
+    }
+
+    @PutMapping("/{id}/teacher-approve")
+    public ResponseEntity<BookingResponse> teacherApprove(@PathVariable Long id, @RequestBody(required = false) ApprovalRequest req, HttpServletRequest request) {
+        Long teacherId = getUserIdFromRequest(request);
+        String remarks = (req != null) ? req.getRemarks() : null;
+        return ResponseEntity.ok(bookingService.teacherApprove(id, teacherId, remarks));
     }
 
     @PutMapping("/{id}/teacher-reject")
-    public ResponseEntity<BookingResponse> teacherReject(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<BookingResponse> teacherReject(@PathVariable Long id, @RequestBody(required = false) ApprovalRequest req, HttpServletRequest request) {
         Long teacherId = getUserIdFromRequest(request);
-        return ResponseEntity.ok(bookingService.teacherReject(id, teacherId));
+        String remarks = (req != null) ? req.getRemarks() : null;
+        return ResponseEntity.ok(bookingService.teacherReject(id, teacherId, remarks));
     }
 
     // ─────────────────────────────────────────────────────
@@ -100,15 +109,17 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/admin-approve")
-    public ResponseEntity<BookingResponse> adminApprove(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<BookingResponse> adminApprove(@PathVariable Long id, @RequestBody(required = false) ApprovalRequest req, HttpServletRequest request) {
         Long adminId = getUserIdFromRequest(request);
-        return ResponseEntity.ok(bookingService.adminApprove(id, adminId));
+        String remarks = (req != null) ? req.getRemarks() : null;
+        return ResponseEntity.ok(bookingService.adminApprove(id, adminId, remarks));
     }
 
     @PutMapping("/{id}/admin-reject")
-    public ResponseEntity<BookingResponse> adminReject(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<BookingResponse> adminReject(@PathVariable Long id, @RequestBody(required = false) ApprovalRequest req, HttpServletRequest request) {
         Long adminId = getUserIdFromRequest(request);
-        return ResponseEntity.ok(bookingService.adminReject(id, adminId));
+        String remarks = (req != null) ? req.getRemarks() : null;
+        return ResponseEntity.ok(bookingService.adminReject(id, adminId, remarks));
     }
 
     @DeleteMapping("/{id}")

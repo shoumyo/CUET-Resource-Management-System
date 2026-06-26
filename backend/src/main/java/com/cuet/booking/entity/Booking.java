@@ -57,6 +57,14 @@ public class Booking {
     @Column(columnDefinition = "TEXT")
     private String purpose;
 
+    /** Note/reason from teacher upon approval/rejection */
+    @Column(columnDefinition = "TEXT")
+    private String teacherRemarks;
+
+    /** Note/reason from admin upon approval/rejection */
+    @Column(columnDefinition = "TEXT")
+    private String adminRemarks;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status;

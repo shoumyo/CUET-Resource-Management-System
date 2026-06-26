@@ -31,13 +31,18 @@ export const getPendingReferenceBookings = async () => {
   return response.data;
 };
 
-export const teacherApprove = async (bookingId) => {
-  const response = await api.put(`/bookings/${bookingId}/teacher-approve`);
+export const teacherApprove = async (bookingId, remarks = "") => {
+  const response = await api.put(`/bookings/${bookingId}/teacher-approve`, { remarks });
   return response.data;
 };
 
-export const teacherReject = async (bookingId) => {
-  const response = await api.put(`/bookings/${bookingId}/teacher-reject`);
+export const teacherReject = async (bookingId, remarks = "") => {
+  const response = await api.put(`/bookings/${bookingId}/teacher-reject`, { remarks });
+  return response.data;
+};
+
+export const getTeacherHistory = async () => {
+  const response = await api.get('/bookings/reference-history');
   return response.data;
 };
 
@@ -52,13 +57,13 @@ export const getAllBookings = async () => {
   return response.data;
 };
 
-export const adminApprove = async (bookingId) => {
-  const response = await api.put(`/bookings/${bookingId}/admin-approve`);
+export const adminApprove = async (bookingId, remarks = "") => {
+  const response = await api.put(`/bookings/${bookingId}/admin-approve`, { remarks });
   return response.data;
 };
 
-export const adminReject = async (bookingId) => {
-  const response = await api.put(`/bookings/${bookingId}/admin-reject`);
+export const adminReject = async (bookingId, remarks = "") => {
+  const response = await api.put(`/bookings/${bookingId}/admin-reject`, { remarks });
   return response.data;
 };
 

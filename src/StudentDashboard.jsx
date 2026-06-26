@@ -4,6 +4,7 @@ import { createHold, submitBooking, getMyBookings, getBookingsForResourceOnDate,
 import { getTeachers } from "./api/userApi";
 import { useToast } from "./components/Toast";
 import cuetLogo from "./Photos/cuet-logo.png";
+import ProfileModal from "./components/ProfileModal";
 
 const statusConfig = {
   AVAILABLE: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: "check_circle" },
@@ -154,6 +155,7 @@ export default function StudentDashboard({ onLogout, user }) {
 
   const [resources, setResources] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [teachers, setTeachers] = useState([]);
 
   const [selectedResource, setSelectedResource] = useState(null);
@@ -182,6 +184,39 @@ export default function StudentDashboard({ onLogout, user }) {
     fetchData();
   }, [activeNav]);
 
+  const fetchBookings = async () => {
+    try {
+      const data = await getMyBookings();
+      
+      const now = new Date();
+      const sortedData = data.sort((a, b) => {
+        const timeA = new Date(a.startTime);
+        const timeB = new Date(b.startTime);
+        const isPastA = timeA < now;
+        const isPastB = timeB < now;
+
+        if (isPastA && !isPastB) return 1;
+        if (!isPastA && isPastB) return -1;
+
+        if (!isPastA && !isPastB) {
+          return timeA - timeB; // closest upcoming first
+        } else {
+          return timeB - timeA; // most recent past first
+        }
+      });
+      
+      setMyBookings(sortedData);
+    } catch (err) {
+      console.error("Failed to fetch my bookings", err);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        toast.error("Session expired. Please login again.");
+        window.location.href = "/";
+      } else {
+        toast.error("Failed to load your bookings.");
+      }
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -189,8 +224,7 @@ export default function StudentDashboard({ onLogout, user }) {
         const res = await getAllResources();
         setResources(res);
       } else if (activeNav === "mybookings") {
-        const b = await getMyBookings();
-        setMyBookings(b);
+        await fetchBookings();
         const t = await getTeachers();
         setTeachers(t);
       }
@@ -392,8 +426,8 @@ export default function StudentDashboard({ onLogout, user }) {
               {activeNav === "book" ? "Browse and book campus facilities" : "Track your reservation status"}
             </p>
           </div>
-          <div className="flex items-center gap-sm">
-            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-sm">
+          <div className="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low p-1.5 rounded-xl transition-colors" onClick={() => setProfileOpen(true)}>
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[16px] shadow-sm">
               {user?.name?.charAt(0)}
             </div>
           </div>
@@ -534,6 +568,20 @@ export default function StudentDashboard({ onLogout, user }) {
                                   <p className="text-[13px] text-on-surface leading-relaxed">{b.purpose}</p>
                                 </div>
                               )}
+
+                              {b.teacherRemarks && (
+                                <div className={`mt-3 rounded-xl p-3 border ${b.status === 'REJECTED' && !b.adminRemarks ? 'bg-red-50/50 border-red-200/50' : 'bg-purple-50/50 border-purple-200/50'}`}>
+                                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${b.status === 'REJECTED' && !b.adminRemarks ? 'text-red-600' : 'text-purple-600'}`}>Teacher's Note</p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed">{b.teacherRemarks}</p>
+                                </div>
+                              )}
+
+                              {b.adminRemarks && (
+                                <div className={`mt-3 rounded-xl p-3 border ${b.status === 'REJECTED' ? 'bg-red-50/50 border-red-200/50' : 'bg-emerald-50/50 border-emerald-200/50'}`}>
+                                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${b.status === 'REJECTED' ? 'text-red-600' : 'text-emerald-600'}`}>Admin's Note</p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed">{b.adminRemarks}</p>
+                                </div>
+                              )}
                             </div>
 
                             {/* Divider for desktop */}
@@ -626,9 +674,28 @@ export default function StudentDashboard({ onLogout, user }) {
                                   </div>
                                 ) : (
                                   <div className="flex gap-2">
-                                    <div className="flex-1 px-3 py-2.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/30 text-center flex items-center justify-center gap-1.5">
-                                      <span className="material-symbols-outlined text-primary/70" style={{ fontSize: "16px" }}>info</span>
-                                      <span className="text-[12px] font-medium text-on-surface-variant">Waiting for approval</span>
+                                    <div className={`flex-1 px-3 py-2.5 rounded-xl border text-center flex items-center justify-center gap-1.5 ${
+                                      b.status === "CONFIRMED" ? "bg-emerald-50 border-emerald-200" :
+                                      b.status === "REJECTED" ? "bg-red-50 border-red-200" :
+                                      "bg-surface-container-low/50 border-outline-variant/30"
+                                    }`}>
+                                      <span className={`material-symbols-outlined ${
+                                        b.status === "CONFIRMED" ? "text-emerald-600" :
+                                        b.status === "REJECTED" ? "text-red-600" :
+                                        "text-primary/70"
+                                      }`} style={{ fontSize: "16px" }}>
+                                        {b.status === "CONFIRMED" ? "check_circle" : b.status === "REJECTED" ? "cancel" : "info"}
+                                      </span>
+                                      <span className={`text-[12px] font-medium ${
+                                        b.status === "CONFIRMED" ? "text-emerald-700" :
+                                        b.status === "REJECTED" ? "text-red-700" :
+                                        "text-on-surface-variant"
+                                      }`}>
+                                        {b.status === "CONFIRMED" ? "Booking Confirmed! You can now use the resource." :
+                                         b.status === "REJECTED" ? "This booking request was rejected." :
+                                         b.status === "PENDING_REFERENCE" ? "Waiting for Teacher Approval" :
+                                         "Waiting for Admin Approval"}
+                                      </span>
                                     </div>
                                   </div>
                                 )}
@@ -666,11 +733,11 @@ export default function StudentDashboard({ onLogout, user }) {
 
       {/* ═══════════════════ Booking Panel ═══════════════════ */}
       {panelOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 modal-overlay" onClick={() => setPanelOpen(false)} />
-          <div className="relative panel-level-2 w-full max-w-lg h-full overflow-y-auto slide-panel open">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col animate-slide-up">
             {/* Header */}
-            <div className="sticky top-0 bg-white/95 backdrop-blur-xl z-10 p-lg pb-4 border-b border-outline-variant/30">
+            <div className="flex-shrink-0 bg-white/95 backdrop-blur-xl z-10 p-lg pb-4 border-b border-outline-variant/30 rounded-t-2xl">
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="text-[20px] font-bold text-on-surface">Book Resource</h3>
@@ -682,7 +749,8 @@ export default function StudentDashboard({ onLogout, user }) {
               </div>
             </div>
             
-            <div className="p-lg pt-4">
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-lg pt-4">
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-[13px] font-medium flex items-start gap-2">
                   <span className="material-symbols-outlined flex-shrink-0 mt-0.5" style={{ fontSize: "18px" }}>error</span>
@@ -707,7 +775,7 @@ export default function StudentDashboard({ onLogout, user }) {
                 </div>
               </div>
 
-              <form onSubmit={handleCreateHold} className="space-y-5">
+              <form id="booking-form" onSubmit={handleCreateHold} className="space-y-5 pb-4">
                 {/* Date Picker */}
                 <div>
                   <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
@@ -782,37 +850,42 @@ export default function StudentDashboard({ onLogout, user }) {
                     )}
                   </div>
                 )}
-
-                {/* Purpose */}
-                <div>
-                  <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Purpose</label>
-                  <textarea
-                    required
-                    rows={2}
-                    value={bookingPurpose}
-                    onChange={(e) => setBookingPurpose(e.target.value)}
-                    placeholder="Describe the purpose of booking..."
-                    className="input-standard w-full px-3 py-2.5 text-[14px] text-on-surface bg-white resize-none rounded-xl"
-                  />
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 pt-1">
-                  <button type="button" onClick={() => setPanelOpen(false)} className="flex-1 py-2.5 border border-outline-variant/50 rounded-xl text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container-low transition-all">
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={selectedSlots.length === 0}
-                    className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold transition-all bg-amber-500 text-white hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="flex items-center justify-center gap-1.5">
-                      <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>timer</span>
-                      Hold (5 Mins)
-                    </span>
-                  </button>
-                </div>
               </form>
+            </div>
+
+            {/* Sticky Footer */}
+            <div className="flex-shrink-0 bg-white border-t border-outline-variant/30 p-lg rounded-b-2xl">
+              {/* Purpose */}
+              <div className="mb-4">
+                <label className="block text-[12px] font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">Purpose</label>
+                <textarea
+                  form="booking-form"
+                  required
+                  rows={2}
+                  value={bookingPurpose}
+                  onChange={(e) => setBookingPurpose(e.target.value)}
+                  placeholder="Describe the purpose of booking..."
+                  className="input-standard w-full px-3 py-2.5 text-[14px] text-on-surface bg-surface-container-lowest resize-none rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none border border-outline-variant/50"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setPanelOpen(false)} className="flex-1 py-3 border border-outline-variant/50 rounded-xl text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container-low transition-all">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="booking-form"
+                  disabled={selectedSlots.length === 0}
+                  className="flex-1 py-3 rounded-xl text-[13px] font-semibold transition-all bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="flex items-center justify-center gap-1.5">
+                    <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>verified</span>
+                    Confirm Booking
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -823,6 +896,8 @@ export default function StudentDashboard({ onLogout, user }) {
         {...confirmModal}
         onCancel={() => setConfirmModal({ open: false })}
       />
+
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }

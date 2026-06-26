@@ -70,6 +70,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/resources/*").hasRole("ADMIN")
                 .requestMatchers("/api/users/all").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/users/*").hasRole("ADMIN")
+                // Profile endpoint for any authenticated user
+                .requestMatchers("/api/users/me").authenticated()
                 // Teachers list is available to students and admins (for reference selection)
                 .requestMatchers(HttpMethod.GET, "/api/users/teachers").hasAnyRole("STUDENT", "ADMIN")
                 .anyRequest().authenticated()

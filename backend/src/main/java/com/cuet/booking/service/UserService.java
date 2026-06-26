@@ -100,6 +100,17 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
     }
 
+    public User updateProfile(Long userId, com.cuet.booking.dto.ProfileUpdateRequest req) {
+        User user = getById(userId);
+        if (req.getName() != null && !req.getName().isBlank()) {
+            user.setName(req.getName());
+        }
+        if (req.getPassword() != null && !req.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(req.getPassword()));
+        }
+        return userRepository.save(user);
+    }
+
     private AuthResponse buildAuthResponse(String token, User user) {
         return AuthResponse.builder()
                 .token(token)

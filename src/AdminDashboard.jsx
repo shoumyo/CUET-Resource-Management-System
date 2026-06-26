@@ -4,6 +4,7 @@ import { getAllResources, createResource, updateResource, deleteResource } from 
 import { getAllUsers, deleteUser } from "./api/userApi";
 import { useToast } from "./components/Toast";
 import cuetLogo from "./Photos/cuet-logo.png";
+import ProfileModal from "./components/ProfileModal";
 
 const statusConfig = {
   HELD: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "schedule" },
@@ -71,7 +72,7 @@ function getDuration(start, end) {
 }
 
 // Confirmation Modal
-function ConfirmModal({ open, title, message, onConfirm, onCancel, danger }) {
+function ConfirmModal({ open, title, message, onConfirm, onCancel, danger, showInput, inputValue, onInputChange, inputPlaceholder }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
@@ -84,6 +85,9 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel, danger }) {
         </div>
         <h3 className="text-[18px] font-bold text-on-surface mb-1">{title}</h3>
         <p className="text-[14px] text-on-surface-variant mb-5 leading-relaxed">{message}</p>
+        
+        {/* showInput removed */}
+
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 py-2.5 border border-outline-variant/50 rounded-xl text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container-low transition-all">
             Cancel
@@ -188,8 +192,10 @@ export default function AdminDashboard({ onLogout, user }) {
 
   // Modals
   const [confirmModal, setConfirmModal] = useState({ open: false, title: "", message: "", onConfirm: null, danger: false });
+  const [adminRemarksMap, setAdminRemarksMap] = useState({});
   const [resourceFormOpen, setResourceFormOpen] = useState(false);
   const [editResource, setEditResource] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -197,27 +203,36 @@ export default function AdminDashboard({ onLogout, user }) {
 
   const fetchData = async () => {
     try {
+      const now = new Date();
+      const sortData = (data) => data.sort((a, b) => {
+        const timeA = new Date(a.startTime);
+        const timeB = new Date(b.startTime);
+        const isPastA = timeA < now;
+        const isPastB = timeB < now;
+        if (isPastA && !isPastB) return 1;
+        if (!isPastA && isPastB) return -1;
+        if (!isPastA && !isPastB) return timeA - timeB;
+        return timeB - timeA;
+      });
+
       if (activeNav === "overview") {
         const r = await getAllResources();
         setResourcesList(r);
         const p = await getPendingAdminBookings();
-        setPendingAdmin(p);
+        setPendingAdmin(sortData(p));
         const a = await getAllBookings();
         setAllBookingsList(a);
         const u = await getAllUsers();
         setUsersList(u);
       } else if (activeNav === "bookings") {
         const a = await getAllBookings();
-        setAllBookingsList(a);
+        setAllBookingsList(sortData(a));
       } else if (activeNav === "resources") {
         const r = await getAllResources();
         setResourcesList(r);
-      } else if (activeNav === "users") {
-        const u = await getAllUsers();
-        setUsersList(u);
       } else if (activeNav === "approvals") {
         const p = await getPendingAdminBookings();
-        setPendingAdmin(p);
+        setPendingAdmin(sortData(p));
       }
     } catch (err) {
       console.error(err);
@@ -225,24 +240,42 @@ export default function AdminDashboard({ onLogout, user }) {
     }
   };
 
-  const handleApprove = async (id) => {
-    try {
-      await adminApprove(id);
-      toast.success("Booking approved successfully!", "Approved ✓");
-      fetchData();
-    } catch (err) {
-      toast.error("Error approving: " + (err.response?.data?.message || err.message));
-    }
+  const handleApprove = (req) => {
+    setConfirmModal({
+      open: true, danger: false,
+      title: "Final Confirm Booking?",
+      message: `You are about to finally approve ${req.studentName}'s request for "${req.resourceName}".`,
+      onConfirm: async () => {
+        setConfirmModal({ open: false, title: "", message: "", onConfirm: null, danger: false });
+        try {
+          await adminApprove(req.bookingId, adminRemarksMap[req.bookingId]);
+          toast.success("Booking approved successfully!", "Approved ✓");
+          setAdminRemarksMap(prev => ({ ...prev, [req.bookingId]: "" }));
+          fetchData();
+        } catch (err) {
+          toast.error("Error approving: " + (err.response?.data?.message || err.message));
+        }
+      }
+    });
   };
 
-  const handleReject = async (id) => {
-    try {
-      await adminReject(id);
-      toast.warning("Booking rejected.", "Rejected");
-      fetchData();
-    } catch (err) {
-      toast.error("Error rejecting: " + (err.response?.data?.message || err.message));
-    }
+  const handleReject = (req) => {
+    setConfirmModal({
+      open: true, danger: true,
+      title: "Reject Booking?",
+      message: `You are about to reject ${req.studentName}'s request for "${req.resourceName}".`,
+      onConfirm: async () => {
+        setConfirmModal({ open: false, title: "", message: "", onConfirm: null, danger: false });
+        try {
+          await adminReject(req.bookingId, adminRemarksMap[req.bookingId]);
+          toast.warning("Booking rejected.", "Rejected");
+          setAdminRemarksMap(prev => ({ ...prev, [req.bookingId]: "" }));
+          fetchData();
+        } catch (err) {
+          toast.error("Error rejecting: " + (err.response?.data?.message || err.message));
+        }
+      }
+    });
   };
 
   const handleDeleteBooking = (id) => {
@@ -398,9 +431,9 @@ export default function AdminDashboard({ onLogout, user }) {
           </div>
           <div className="flex items-center gap-sm">
             <button onClick={fetchData} className="w-9 h-9 rounded-xl hover:bg-surface-container-low flex items-center justify-center transition-colors" title="Refresh">
-              <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: "20px" }}>refresh</span>
+              <span className="material-symbols-outlined text-[20px] text-on-surface-variant">refresh</span>
             </button>
-            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center text-white text-sm font-bold shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[16px] shadow-sm cursor-pointer hover:bg-primary/20 transition-colors" onClick={() => setProfileOpen(true)}>
               {user?.name?.charAt(0)}
             </div>
           </div>
@@ -450,10 +483,10 @@ export default function AdminDashboard({ onLogout, user }) {
                           <p className="text-[13px] text-on-surface-variant mt-0.5">By {b.studentName} · {formatDate(b.startTime)}</p>
                         </div>
                         <div className="flex gap-2">
-                          <button onClick={() => handleApprove(b.bookingId)} className="px-5 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[12px] font-bold hover:bg-emerald-100 hover:shadow-sm transition-all flex items-center gap-1.5">
+                          <button onClick={() => handleApprove(b)} className="px-5 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-[12px] font-bold hover:bg-emerald-100 hover:shadow-sm transition-all flex items-center gap-1.5">
                             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>check_circle</span> Approve
                           </button>
-                          <button onClick={() => handleReject(b.bookingId)} className="px-5 py-2.5 rounded-xl bg-red-50 text-red-700 border border-red-200 text-[12px] font-bold hover:bg-red-100 hover:shadow-sm transition-all flex items-center gap-1.5">
+                          <button onClick={() => handleReject(b)} className="px-5 py-2.5 rounded-xl bg-red-50 text-red-700 border border-red-200 text-[12px] font-bold hover:bg-red-100 hover:shadow-sm transition-all flex items-center gap-1.5">
                             <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>cancel</span> Reject
                           </button>
                         </div>
@@ -515,59 +548,117 @@ export default function AdminDashboard({ onLogout, user }) {
 
                       {/* Card Body */}
                       <div className="p-5">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                          {/* Student Info */}
-                          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-50/50 border border-blue-100/70">
-                            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "18px" }}>school</span>
+                        {/* ── Expandable Details Button ── */}
+                        <button
+                          onClick={() => toggleExpand(b.bookingId)}
+                          className="w-full flex items-center justify-center gap-1.5 text-[12px] font-semibold text-primary/70 hover:text-primary py-1.5 rounded-lg hover:bg-primary/5 transition-all mb-3"
+                        >
+                          <span className="material-symbols-outlined transition-transform duration-300" style={{ fontSize: "16px", transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}>
+                            expand_more
+                          </span>
+                          {isExpanded ? "Less Details" : "More Details"}
+                        </button>
+
+                        <div
+                          className="overflow-hidden transition-all duration-300 ease-in-out"
+                          style={{
+                            maxHeight: isExpanded ? "1200px" : "0px",
+                            opacity: isExpanded ? 1 : 0,
+                          }}
+                        >
+                          <div className="pt-3 border-t border-outline-variant/30 mb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                              {/* Student Info */}
+                              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-blue-50/50 border border-blue-100/70">
+                                <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "18px" }}>school</span>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Requested By</p>
+                                  <p className="text-[14px] font-semibold text-on-surface leading-snug truncate">{b.studentName}</p>
+                                  <p className="text-[11px] text-on-surface-variant truncate mt-0.5">{b.studentEmail}</p>
+                                </div>
+                              </div>
+
+                              {/* Schedule Info */}
+                              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100/70">
+                                <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: "18px" }}>event</span>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Schedule</p>
+                                  <p className="text-[14px] font-semibold text-on-surface leading-snug">{formatDate(b.startTime)}</p>
+                                  <p className="text-[11px] text-on-surface-variant mt-0.5">
+                                    {formatTime(b.startTime)} — {formatTime(b.endTime)} · {getDuration(b.startTime, b.endTime)}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Requested By</p>
-                              <p className="text-[14px] font-semibold text-on-surface leading-snug truncate">{b.studentName}</p>
-                              <p className="text-[11px] text-on-surface-variant truncate mt-0.5">{b.studentEmail}</p>
+
+                            {/* Reference & Purpose Row */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                              {b.referenceTeacherName && (
+                                <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100/70 flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 text-xs font-bold">
+                                    {b.referenceTeacherName.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-0.5">Approved By Teacher</p>
+                                    <p className="text-[13px] font-semibold text-on-surface">{b.referenceTeacherName}</p>
+                                    {b.teacherRemarks && (
+                                      <div className="mt-2 p-2 bg-purple-100/50 rounded-lg">
+                                        <p className="text-[11px] font-bold text-purple-600 mb-0.5">Teacher's Note:</p>
+                                        <p className="text-[12px] text-purple-800 italic leading-snug">"{b.teacherRemarks}"</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              {b.purpose && (
+                                <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex-1">
+                                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Purpose</p>
+                                  <p className="text-[13px] text-on-surface">{b.purpose}</p>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Admin Note Section */}
+                            <div className="mb-4">
+                              <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Add Admin Note (Optional)</label>
+                              <textarea
+                                className="w-full p-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-[14px] focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                                rows="2"
+                                placeholder="Add a message regarding this booking..."
+                                value={adminRemarksMap[b.bookingId] || ""}
+                                onChange={(e) => setAdminRemarksMap(prev => ({ ...prev, [b.bookingId]: e.target.value }))}
+                              ></textarea>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              <div className="p-2.5 rounded-lg bg-surface-container-low/50">
+                                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Booking ID</p>
+                                <p className="text-[13px] font-semibold text-on-surface">#{b.bookingId}</p>
+                              </div>
+                              <div className="p-2.5 rounded-lg bg-surface-container-low/50">
+                                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Resource ID</p>
+                                <p className="text-[13px] font-semibold text-on-surface">#{b.resourceId}</p>
+                              </div>
+                              <div className="p-2.5 rounded-lg bg-surface-container-low/50">
+                                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Resource Type</p>
+                                <p className="text-[13px] font-semibold text-on-surface">{b.resourceType}</p>
+                              </div>
+                              <div className="p-2.5 rounded-lg bg-surface-container-low/50">
+                                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-0.5">Submitted At</p>
+                                <p className="text-[13px] font-semibold text-on-surface">{new Date(b.createdAt).toLocaleDateString()}</p>
+                              </div>
                             </div>
                           </div>
-
-                          {/* Schedule Info */}
-                          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100/70">
-                            <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: "18px" }}>event</span>
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Schedule</p>
-                              <p className="text-[14px] font-semibold text-on-surface leading-snug">{formatDate(b.startTime)}</p>
-                              <p className="text-[11px] text-on-surface-variant mt-0.5">
-                                {formatTime(b.startTime)} — {formatTime(b.endTime)} · {getDuration(b.startTime, b.endTime)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Reference & Purpose Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                          {b.referenceTeacherName && (
-                            <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100/70 flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 text-xs font-bold">
-                                {b.referenceTeacherName.charAt(0)}
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-0.5">Approved By Teacher</p>
-                                <p className="text-[13px] font-semibold text-on-surface">{b.referenceTeacherName}</p>
-                              </div>
-                            </div>
-                          )}
-                          {b.purpose && (
-                            <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex-1">
-                              <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Purpose</p>
-                              <p className="text-[13px] text-on-surface">{b.purpose}</p>
-                            </div>
-                          )}
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex gap-3">
                           <button
-                            onClick={() => handleApprove(b.bookingId)}
+                            onClick={() => handleApprove(b)}
                             className="flex-1 py-3 rounded-xl bg-emerald-500 text-white text-[13px] font-semibold hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
                           >
                             <span className="flex items-center justify-center gap-2">
@@ -576,7 +667,7 @@ export default function AdminDashboard({ onLogout, user }) {
                             </span>
                           </button>
                           <button
-                            onClick={() => handleReject(b.bookingId)}
+                            onClick={() => handleReject(b)}
                             className="flex-1 py-3 rounded-xl bg-white text-red-600 border-2 border-red-200 text-[13px] font-semibold hover:bg-red-50 hover:border-red-300 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
                           >
                             <span className="flex items-center justify-center gap-2">
@@ -800,6 +891,7 @@ export default function AdminDashboard({ onLogout, user }) {
       {/* Modals */}
       <ConfirmModal {...confirmModal} onCancel={() => setConfirmModal({ open: false })} />
       <ResourceFormModal open={resourceFormOpen} onClose={() => { setResourceFormOpen(false); setEditResource(null); }} onSubmit={handleResourceFormSubmit} editResource={editResource} />
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }

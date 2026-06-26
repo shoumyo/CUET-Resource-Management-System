@@ -15,6 +15,7 @@ C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\dto\AuthResponse.java
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\entity\Resource.java
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\service\ResourceService.java
+C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\dto\ApprovalRequest.java
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\enums\Role.java
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\dto\RegisterRequest.java
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\dto\BookingRequest.java
@@ -25,3 +26,4 @@ C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\enums\BookingStatus.java
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\controller\AuthController.java
 C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\controller\BookingController.java
+C:\Users\shoumyo\CUET Resource Management Sysytem\backend\src\main\java\com\cuet\booking\dto\ProfileUpdateRequest.java

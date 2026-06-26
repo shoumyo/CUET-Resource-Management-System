@@ -143,23 +143,36 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    public List<BookingResponse> getTeacherHistory(Long teacherId) {
+        return bookingRepository.findAllByReferenceTeacher_UserId(teacherId).stream()
+                .filter(b -> b.getStatus() != BookingStatus.HELD && b.getStatus() != BookingStatus.PENDING_REFERENCE)
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
-    public BookingResponse teacherApprove(Long bookingId, Long teacherId) {
+    public BookingResponse teacherApprove(Long bookingId, Long teacherId, String remarks) {
         Booking booking = getBookingAndVerifyRefTeacher(bookingId, teacherId);
         if (booking.getStatus() != BookingStatus.PENDING_REFERENCE) {
             throw new IllegalStateException("Booking is not pending reference approval.");
         }
         booking.setStatus(BookingStatus.PENDING_ADMIN);
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            booking.setTeacherRemarks(remarks);
+        }
         return mapToResponse(bookingRepository.save(booking));
     }
 
     @Transactional
-    public BookingResponse teacherReject(Long bookingId, Long teacherId) {
+    public BookingResponse teacherReject(Long bookingId, Long teacherId, String remarks) {
         Booking booking = getBookingAndVerifyRefTeacher(bookingId, teacherId);
         if (booking.getStatus() != BookingStatus.PENDING_REFERENCE) {
             throw new IllegalStateException("Booking is not pending reference approval.");
         }
         booking.setStatus(BookingStatus.REJECTED);
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            booking.setTeacherRemarks(remarks);
+        }
         return mapToResponse(bookingRepository.save(booking));
     }
 
@@ -187,7 +200,7 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingResponse adminApprove(Long bookingId, Long adminId) {
+    public BookingResponse adminApprove(Long bookingId, Long adminId, String remarks) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
         if (booking.getStatus() != BookingStatus.PENDING_ADMIN) {
@@ -195,17 +208,23 @@ public class BookingService {
         }
         
         booking.setStatus(BookingStatus.CONFIRMED);
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            booking.setAdminRemarks(remarks);
+        }
         return mapToResponse(bookingRepository.save(booking));
     }
 
     @Transactional
-    public BookingResponse adminReject(Long bookingId, Long adminId) {
+    public BookingResponse adminReject(Long bookingId, Long adminId, String remarks) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
         if (booking.getStatus() != BookingStatus.PENDING_ADMIN) {
             throw new IllegalStateException("Booking is not pending admin approval.");
         }
         booking.setStatus(BookingStatus.REJECTED);
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            booking.setAdminRemarks(remarks);
+        }
         return mapToResponse(bookingRepository.save(booking));
     }
 
@@ -283,6 +302,8 @@ public class BookingService {
                 .bookingId(b.getBookingId())
                 .status(b.getStatus().name())
                 .purpose(b.getPurpose())
+                .teacherRemarks(b.getTeacherRemarks())
+                .adminRemarks(b.getAdminRemarks())
                 .resourceId(b.getResource().getResourceId())
                 .resourceName(b.getResource().getName())
                 .resourceType(b.getResource().getType())
