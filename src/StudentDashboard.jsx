@@ -5,6 +5,7 @@ import { getTeachers } from "./api/userApi";
 import { useToast } from "./components/Toast";
 import cuetLogo from "./Photos/cuet-logo.png";
 import ProfileModal from "./components/ProfileModal";
+import TextModal from "./components/TextModal";
 
 const statusConfig = {
   AVAILABLE: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: "check_circle" },
@@ -148,14 +149,17 @@ function ConfirmModal({ open, title, message, icon, iconColor, iconBg, onConfirm
 // ─────────────────────────────────────────────────────
 // Main Dashboard
 // ─────────────────────────────────────────────────────
-export default function StudentDashboard({ onLogout, user }) {
+export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
   const toast = useToast();
   const [activeNav, setActiveNav] = useState("book");
   const [filterType, setFilterType] = useState("All");
 
   const [resources, setResources] = useState([]);
-  const [myBookings, setMyBookings] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [expandedText, setExpandedText] = useState(null);
+
+  const [myBookings, setMyBookings] = useState([]);
   const [teachers, setTeachers] = useState([]);
 
   const [selectedResource, setSelectedResource] = useState(null);
@@ -572,23 +576,41 @@ export default function StudentDashboard({ onLogout, user }) {
                               </div>
 
                               {b.purpose && (
-                                <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100/50">
-                                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Purpose</p>
-                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{b.purpose}</p>
+                                <div 
+                                  className="bg-blue-50/50 rounded-xl p-3 border border-blue-100/50 cursor-pointer hover:bg-blue-100/50 transition-colors group"
+                                  onClick={() => setExpandedText({ title: "Purpose", content: b.purpose, color: "blue" })}
+                                >
+                                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1 flex justify-between items-center">
+                                    Purpose
+                                    <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
+                                  </p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap line-clamp-2">{b.purpose}</p>
                                 </div>
                               )}
 
                               {b.teacherRemarks && (
-                                <div className={`mt-3 rounded-xl p-3 border ${b.status === 'REJECTED' && !b.adminRemarks ? 'bg-red-50/50 border-red-200/50' : 'bg-purple-50/50 border-purple-200/50'}`}>
-                                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${b.status === 'REJECTED' && !b.adminRemarks ? 'text-red-600' : 'text-purple-600'}`}>Teacher's Note</p>
-                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{b.teacherRemarks}</p>
+                                <div 
+                                  className={`mt-3 rounded-xl p-3 border cursor-pointer transition-colors group ${b.status === 'REJECTED' && !b.adminRemarks ? 'bg-red-50/50 border-red-200/50 hover:bg-red-100/50' : 'bg-purple-50/50 border-purple-200/50 hover:bg-purple-100/50'}`}
+                                  onClick={() => setExpandedText({ title: "Teacher's Note", content: b.teacherRemarks, color: b.status === 'REJECTED' && !b.adminRemarks ? "red" : "purple" })}
+                                >
+                                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center ${b.status === 'REJECTED' && !b.adminRemarks ? 'text-red-600' : 'text-purple-600'}`}>
+                                    Teacher's Note
+                                    <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
+                                  </p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap line-clamp-2">{b.teacherRemarks}</p>
                                 </div>
                               )}
 
                               {b.adminRemarks && (
-                                <div className={`mt-3 rounded-xl p-3 border ${b.status === 'REJECTED' ? 'bg-red-50/50 border-red-200/50' : 'bg-emerald-50/50 border-emerald-200/50'}`}>
-                                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${b.status === 'REJECTED' ? 'text-red-600' : 'text-emerald-600'}`}>Admin's Note</p>
-                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{b.adminRemarks}</p>
+                                <div 
+                                  className={`mt-3 rounded-xl p-3 border cursor-pointer transition-colors group ${b.status === 'REJECTED' ? 'bg-red-50/50 border-red-200/50 hover:bg-red-100/50' : 'bg-emerald-50/50 border-emerald-200/50 hover:bg-emerald-100/50'}`}
+                                  onClick={() => setExpandedText({ title: "Admin's Note", content: b.adminRemarks, color: b.status === 'REJECTED' ? "red" : "emerald" })}
+                                >
+                                  <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 flex justify-between items-center ${b.status === 'REJECTED' ? 'text-red-600' : 'text-emerald-600'}`}>
+                                    Admin's Note
+                                    <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
+                                  </p>
+                                  <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap line-clamp-2">{b.adminRemarks}</p>
                                 </div>
                               )}
                             </div>
@@ -906,7 +928,20 @@ export default function StudentDashboard({ onLogout, user }) {
         onCancel={() => setConfirmModal({ open: false })}
       />
 
-      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <ProfileModal 
+        isOpen={profileOpen} 
+        onClose={() => setProfileOpen(false)} 
+        user={user}
+        onUpdate={onUpdateUser}
+      />
+
+      <TextModal 
+        isOpen={!!expandedText}
+        onClose={() => setExpandedText(null)}
+        title={expandedText?.title}
+        content={expandedText?.content}
+        themeColor={expandedText?.color}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { getAllUsers, deleteUser } from "./api/userApi";
 import { useToast } from "./components/Toast";
 import cuetLogo from "./Photos/cuet-logo.png";
 import ProfileModal from "./components/ProfileModal";
+import TextModal from "./components/TextModal";
 
 const statusConfig = {
   HELD: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "schedule" },
@@ -180,7 +181,7 @@ function ResourceFormModal({ open, onClose, onSubmit, editResource }) {
   );
 }
 
-export default function AdminDashboard({ onLogout, user }) {
+export default function AdminDashboard({ onLogout, user, onUpdateUser }) {
   const toast = useToast();
   const [activeNav, setActiveNav] = useState("overview");
   const [pendingAdmin, setPendingAdmin] = useState([]);
@@ -192,8 +193,9 @@ export default function AdminDashboard({ onLogout, user }) {
 
   // Modals
   const [confirmModal, setConfirmModal] = useState({ open: false, title: "", message: "", onConfirm: null, danger: false });
-  const [adminRemarksMap, setAdminRemarksMap] = useState({});
   const [resourceFormOpen, setResourceFormOpen] = useState(false);
+  const [adminRemarksMap, setAdminRemarksMap] = useState({});
+  const [expandedText, setExpandedText] = useState(null);
   const [editResource, setEditResource] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -527,6 +529,7 @@ export default function AdminDashboard({ onLogout, user }) {
                 pendingAdmin.map((b, i) => {
                   const resourceIcon = typeIcons[b.resourceType] || "domain";
                   const gradient = typeGradients[b.resourceType] || "from-primary to-primary";
+                  const isExpanded = expandedCard === b.bookingId;
                   
                   return (
                     <div
@@ -612,18 +615,30 @@ export default function AdminDashboard({ onLogout, user }) {
                                     <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest mb-0.5">Approved By Teacher</p>
                                     <p className="text-[13px] font-semibold text-on-surface">{b.referenceTeacherName}</p>
                                     {b.teacherRemarks && (
-                                      <div className="mt-2 p-2 bg-purple-100/50 rounded-lg">
-                                        <p className="text-[11px] font-bold text-purple-600 mb-0.5">Teacher's Note:</p>
-                                        <p className="text-[12px] text-purple-800 italic leading-snug break-words whitespace-pre-wrap">"{b.teacherRemarks}"</p>
+                                      <div 
+                                        className="mt-2 p-2 bg-purple-100/50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors group"
+                                        onClick={() => setExpandedText({ title: "Teacher's Note", content: b.teacherRemarks, color: "purple" })}
+                                      >
+                                        <p className="text-[11px] font-bold text-purple-600 mb-0.5 flex justify-between items-center">
+                                          Teacher's Note:
+                                          <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
+                                        </p>
+                                        <p className="text-[12px] text-purple-800 italic leading-snug break-words whitespace-pre-wrap line-clamp-2">"{b.teacherRemarks}"</p>
                                       </div>
                                     )}
                                   </div>
                                 </div>
                               )}
                               {b.purpose && (
-                                <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex-1">
-                                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Purpose</p>
-                                  <p className="text-[13px] text-on-surface break-words whitespace-pre-wrap">{b.purpose}</p>
+                                <div 
+                                  className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex-1 cursor-pointer hover:bg-surface-container transition-colors group"
+                                  onClick={() => setExpandedText({ title: "Purpose", content: b.purpose, color: "blue" })}
+                                >
+                                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 flex justify-between items-center">
+                                    Purpose
+                                    <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
+                                  </p>
+                                  <p className="text-[13px] text-on-surface break-words whitespace-pre-wrap line-clamp-2">{b.purpose}</p>
                                 </div>
                               )}
                             </div>
@@ -897,7 +912,20 @@ export default function AdminDashboard({ onLogout, user }) {
       {/* Modals */}
       <ConfirmModal {...confirmModal} onCancel={() => setConfirmModal({ open: false })} />
       <ResourceFormModal open={resourceFormOpen} onClose={() => { setResourceFormOpen(false); setEditResource(null); }} onSubmit={handleResourceFormSubmit} editResource={editResource} />
-      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      <ProfileModal 
+        isOpen={profileOpen} 
+        onClose={() => setProfileOpen(false)} 
+        user={user}
+        onUpdate={onUpdateUser}
+      />
+
+      <TextModal 
+        isOpen={!!expandedText}
+        onClose={() => setExpandedText(null)}
+        title={expandedText?.title}
+        content={expandedText?.content}
+        themeColor={expandedText?.color}
+      />
     </div>
   );
 }

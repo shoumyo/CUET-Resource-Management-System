@@ -3,6 +3,7 @@ import { getPendingReferenceBookings, teacherApprove, teacherReject, getTeacherH
 import { useToast } from "./components/Toast";
 import cuetLogo from "./Photos/cuet-logo.png";
 import ProfileModal from "./components/ProfileModal";
+import TextModal from "./components/TextModal";
 
 const statusConfig = {
   PENDING_REFERENCE: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "hourglass_top", label: "Awaiting Your Review" },
@@ -107,7 +108,7 @@ function ConfirmModal({ open, title, message, icon, iconColor, iconBg, onConfirm
   );
 }
 
-export default function TeacherDashboard({ onLogout, user }) {
+export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
   const toast = useToast();
   const [activeNav, setActiveNav] = useState("requests");
   const [requests, setRequests] = useState([]);
@@ -116,6 +117,7 @@ export default function TeacherDashboard({ onLogout, user }) {
   const [confirmModal, setConfirmModal] = useState({ open: false });
   const [remarksMap, setRemarksMap] = useState({});
   const [profileOpen, setProfileOpen] = useState(false);
+  const [expandedText, setExpandedText] = useState(null);
 
   useEffect(() => {
     fetchRequests();
@@ -280,6 +282,21 @@ export default function TeacherDashboard({ onLogout, user }) {
           </div>
         </header>
 
+        <ProfileModal 
+          isOpen={profileOpen} 
+          onClose={() => setProfileOpen(false)} 
+          user={user} 
+          onUpdate={onUpdateUser}
+        />
+
+        <TextModal 
+          isOpen={!!expandedText}
+          onClose={() => setExpandedText(null)}
+          title={expandedText?.title}
+          content={expandedText?.content}
+          themeColor={expandedText?.color}
+        />
+
         <main className="flex-1 p-margin-mobile md:p-margin-desktop">
           {activeNav === "requests" && (
             <div className="animate-fade-in">
@@ -422,12 +439,18 @@ export default function TeacherDashboard({ onLogout, user }) {
 
                               {/* ── Purpose Section ── */}
                               {req.purpose && (
-                                <div className="p-3.5 rounded-xl bg-amber-50/40 border border-amber-100/60 mb-4">
+                                <div 
+                                  className="p-3.5 rounded-xl bg-amber-50/40 border border-amber-100/60 mb-4 cursor-pointer hover:bg-amber-100/40 transition-colors group"
+                                  onClick={() => setExpandedText({ title: "Purpose of Booking", content: req.purpose, color: "amber" })}
+                                >
                                   <div className="flex items-start gap-2.5">
                                     <span className="material-symbols-outlined text-amber-500 flex-shrink-0 mt-0.5" style={{ fontSize: "18px" }}>description</span>
-                                    <div>
-                                      <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Purpose of Booking</p>
-                                      <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap">{req.purpose}</p>
+                                    <div className="flex-1">
+                                      <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1 flex justify-between items-center">
+                                        Purpose of Booking
+                                        <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
+                                      </p>
+                                      <p className="text-[13px] text-on-surface leading-relaxed break-words whitespace-pre-wrap line-clamp-2">{req.purpose}</p>
                                     </div>
                                   </div>
                                 </div>
@@ -589,9 +612,15 @@ export default function TeacherDashboard({ onLogout, user }) {
                           </p>
                         </div>
                         {h.teacherRemarks && (
-                          <div className="p-3 rounded-lg bg-surface-container-low/50 border border-outline-variant/30 mt-auto">
-                            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Your Note</p>
-                            <p className="text-[12px] text-on-surface italic break-words whitespace-pre-wrap">"{h.teacherRemarks}"</p>
+                          <div 
+                            className="p-3 rounded-lg bg-surface-container-low/50 border border-outline-variant/30 mt-auto cursor-pointer hover:bg-surface-container/50 transition-colors group"
+                            onClick={() => setExpandedText({ title: "Your Note", content: h.teacherRemarks, color: "blue" })}
+                          >
+                            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 flex justify-between items-center">
+                              Your Note
+                              <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">open_in_full</span>
+                            </p>
+                            <p className="text-[12px] text-on-surface italic break-words whitespace-pre-wrap line-clamp-2">"{h.teacherRemarks}"</p>
                           </div>
                         )}
                       </div>
