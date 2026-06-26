@@ -123,6 +123,11 @@ export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
     fetchRequests();
   }, [activeNav]);
 
+  const handleRefresh = async () => {
+    await fetchRequests();
+    toast.success("Data refreshed");
+  };
+
   const fetchRequests = async () => {
     try {
       const now = new Date();
@@ -267,7 +272,7 @@ export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={fetchRequests} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
+            <button onClick={handleRefresh} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
               <span className="material-symbols-outlined text-[18px] text-on-surface-variant">refresh</span>
               <span className="text-[13px] font-semibold text-on-surface-variant hidden sm:block">Refresh</span>
             </button>

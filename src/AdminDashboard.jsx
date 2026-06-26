@@ -203,6 +203,11 @@ export default function AdminDashboard({ onLogout, user, onUpdateUser }) {
     fetchData();
   }, [activeNav]);
 
+  const handleRefresh = async () => {
+    await fetchData();
+    toast.success("Data refreshed");
+  };
+
   const fetchData = async () => {
     try {
       const now = new Date();
@@ -432,7 +437,7 @@ export default function AdminDashboard({ onLogout, user, onUpdateUser }) {
             <p className="text-[12px] text-on-surface-variant mt-0.5">Manage the entire CUET booking system</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={fetchData} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
+            <button onClick={handleRefresh} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
               <span className="material-symbols-outlined text-[18px] text-on-surface-variant">refresh</span>
               <span className="text-[13px] font-semibold text-on-surface-variant hidden sm:block">Refresh</span>
             </button>

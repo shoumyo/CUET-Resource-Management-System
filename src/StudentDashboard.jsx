@@ -221,6 +221,11 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
     }
   };
 
+  const handleRefresh = async () => {
+    await fetchData();
+    toast.success("Data refreshed");
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -431,7 +436,7 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={fetchData} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
+            <button onClick={handleRefresh} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
               <span className="material-symbols-outlined text-[18px] text-on-surface-variant">refresh</span>
               <span className="text-[13px] font-semibold text-on-surface-variant hidden sm:block">Refresh</span>
             </button>
@@ -477,8 +482,8 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
                     <div className="p-5 flex-1 flex flex-col">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-                            <span className="material-symbols-outlined text-white" style={{ fontSize: "24px" }}>
+                          <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-indigo-600" style={{ fontSize: "24px" }}>
                               {typeIcons[resource.type] || "domain"}
                             </span>
                           </div>
@@ -814,8 +819,8 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
               {/* Resource Info Card */}
               <div className="mb-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-                    <span className="material-symbols-outlined text-white" style={{ fontSize: "24px" }}>
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-indigo-600" style={{ fontSize: "24px" }}>
                       {typeIcons[selectedResource?.type] || "domain"}
                     </span>
                   </div>
