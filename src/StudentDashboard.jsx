@@ -929,7 +929,7 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
       />
 
       <ProfileModal 
-        isOpen={profileOpen} 
+        open={profileOpen} 
         onClose={() => setProfileOpen(false)} 
         user={user}
         onUpdate={onUpdateUser}

@@ -283,7 +283,7 @@ export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
         </header>
 
         <ProfileModal 
-          isOpen={profileOpen} 
+          open={profileOpen} 
           onClose={() => setProfileOpen(false)} 
           user={user} 
           onUpdate={onUpdateUser}

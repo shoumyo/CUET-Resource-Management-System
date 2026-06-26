@@ -913,7 +913,7 @@ export default function AdminDashboard({ onLogout, user, onUpdateUser }) {
       <ConfirmModal {...confirmModal} onCancel={() => setConfirmModal({ open: false })} />
       <ResourceFormModal open={resourceFormOpen} onClose={() => { setResourceFormOpen(false); setEditResource(null); }} onSubmit={handleResourceFormSubmit} editResource={editResource} />
       <ProfileModal 
-        isOpen={profileOpen} 
+        open={profileOpen} 
         onClose={() => setProfileOpen(false)} 
         user={user}
         onUpdate={onUpdateUser}
