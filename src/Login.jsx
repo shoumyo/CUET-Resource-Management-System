@@ -133,17 +133,17 @@ export default function Login({ onNavigate, onLogin }) {
           <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mx-auto mb-8 overflow-hidden p-1 shadow-[0_0_30px_rgba(255,255,255,0.1)] border border-white/20">
             <img src={cuetLogo} alt="CUET Logo" className="w-full h-full object-contain drop-shadow-md" />
           </div>
-          <h2 className="text-[42px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#C9B59C] via-[#EFE9E3] to-[#F9F8F6] mb-6 tracking-tight drop-shadow-[0_2px_10px_rgba(201,181,156,0.5)] leading-tight">
+          <h2 className="text-[42px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-200 mb-6 tracking-tight drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] leading-tight">
             {config.leftTitle}
           </h2>
-          <p className="text-[16px] text-[#F9F8F6]/90 leading-relaxed drop-shadow-md mb-10">
+          <p className="text-[16px] text-white/90 leading-relaxed drop-shadow-md mb-10">
             {config.leftSubtitle}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {config.leftPills.map((f, i) => (
               <span 
                 key={f} 
-                className="px-4 py-2 rounded-full bg-[#C9B59C]/20 text-[#EFE9E3] text-[13px] font-bold backdrop-blur-md border border-[#C9B59C]/30 shadow-lg animate-pop-in hover:bg-[#C9B59C]/30 transition-all cursor-default hover:scale-105"
+                className="px-4 py-2 rounded-full bg-amber-500/20 text-amber-200 text-[13px] font-bold backdrop-blur-md border border-amber-500/30 shadow-lg animate-pop-in hover:bg-amber-500/30 transition-all cursor-default hover:scale-105"
                 style={{ animationDelay: `${0.1 + i * 0.1}s` }}
               >
                 {f}

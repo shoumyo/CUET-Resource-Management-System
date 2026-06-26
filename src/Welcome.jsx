@@ -125,7 +125,7 @@ export default function Welcome({ onNavigate }) {
         {/* Hero Text Content */}
         <div className={`relative z-10 w-full max-w-[1440px] mx-auto px-margin-mobile md:px-[120px] transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
           <div className="max-w-3xl text-left">
-            <h1 className="text-[52px] md:text-[72px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#C9B59C] via-[#EFE9E3] to-[#F9F8F6] leading-[1.1] mb-6 drop-shadow-lg tracking-tight">
+            <h1 className="text-[52px] md:text-[72px] font-extrabold text-white leading-[1.1] mb-6 drop-shadow-lg tracking-tight">
               Elevate Campus <br /> Booking.
             </h1>
             <p className="text-[18px] md:text-[22px] text-white/90 mb-10 drop-shadow-md leading-relaxed">
@@ -170,7 +170,7 @@ export default function Welcome({ onNavigate }) {
             { num: 50, label: "Active Users" },
           ].map((s) => (
             <div key={s.label} className="flex flex-col items-center">
-              <p className="text-[48px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#C9B59C] via-[#D9CFC7] to-[#C9B59C] mb-2 drop-shadow-sm">
+              <p className="text-[48px] font-extrabold text-amber-500 mb-2 drop-shadow-sm">
                 <AnimatedCounter target={s.num} />
               </p>
               <p className="text-[16px] text-on-surface-variant font-bold tracking-widest uppercase">{s.label}</p>
