@@ -4,7 +4,7 @@ A comprehensive, role-based web application designed to streamline the booking a
 
 ## 🚀 Features
 
-*   **Role-Based Dashboards**: Tailored interfaces for Students, Teachers, and Administrators.
+*   **Role-Based Dashboards**: Tailored interfaces for Students, Teachers, and Administrators with a secure routing system.
 *   **Visual Slot Picker**: Students can easily view available, booked, and selected time slots for any resource on a given date to prevent scheduling conflicts.
 *   **Approval Workflow**: 
     1.  Student requests a hold on a resource.
@@ -12,21 +12,21 @@ A comprehensive, role-based web application designed to streamline the booking a
     3.  Reference Teacher approves the request.
     4.  Admin / Teacher-in-Charge gives the final confirmation.
 *   **Real-time Availability**: Resources display live "AVAILABLE" or "IN USE" badges based on active bookings.
-*   **Beautiful UI**: Premium glassmorphism design with custom animations, gradient accents, and responsive layouts.
-*   **Custom Notifications**: Built-in, animated toast notification system for alerts and errors.
+*   **Premium Visual Design**: Features a highly polished aesthetic with perfect square-tiled information cards, pastel gradients, deep blur glassmorphism, smooth micro-animations, and dynamic visual feedback.
+*   **Custom Notifications**: Built-in, animated toast notification system for alerts, errors, and system syncs (e.g., spinning refresh indicators).
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-*   **React + Vite**: For fast and modern UI rendering.
-*   **Tailwind CSS**: For utility-first styling and responsive design.
-*   **Axios**: For making API requests to the backend.
+*   **React + Vite**: For blazing fast HMR and modern UI rendering.
+*   **Tailwind CSS**: For utility-first styling and highly responsive mobile-first design.
+*   **Axios**: For making secure API requests to the backend.
 
 ### Backend
-*   **Spring Boot (Java)**: robust backend framework for handling business logic and REST APIs.
+*   **Spring Boot (Java)**: Robust backend framework for handling business logic and REST APIs.
 *   **Spring Security & JWT**: Secure authentication and authorization for different user roles (STUDENT, TEACHER, ADMIN).
-*   **Hibernate / JPA**: ORM for database operations.
-*   **MySQL**: Relational database for persistent storage.
+*   **Hibernate / JPA**: ORM for seamless database operations.
+*   **MySQL**: Relational database for persistent data storage.
 
 ## ⚙️ Running the Project Locally
 
@@ -58,14 +58,17 @@ npm run dev
 Open your browser and navigate to `http://localhost:5173`.
 
 ## 🧪 Default Test Accounts
-Upon starting the backend, the following accounts are automatically seeded into the database:
+Upon starting the backend, the following accounts are automatically seeded into the database for testing:
 *   **Admin**: `admin@cuet.ac.bd` / `password`
 *   **Teacher**: `teacher1@cuet.ac.bd` / `password`
 
-*(Note: All registered emails must end with `@cuet.ac.bd`)*
+*(Note: All registered emails must end with the `@cuet.ac.bd` domain restriction)*
 
 ## 📂 Project Structure
 
-*   `/src`: Frontend React source code (Components, API hooks, Dashboards, CSS).
-*   `/backend/src`: Spring Boot Java source code (Controllers, Services, Repositories, Security, DTOs).
+*   `/src/pages`: Frontend React views (AdminDashboard, StudentDashboard, TeacherDashboard, Login, Welcome).
+*   `/src/components`: Reusable UI elements (Modals, Toast Notifications).
+*   `/src/api`: Axios wrappers for backend endpoints.
+*   `/src/assets`: Images, logos, and static resources.
+*   `/backend/src/main/java/...`: Spring Boot Java source code (Controllers, Services, Repositories, Security, DTOs).
 *   `/backend/src/main/resources`: Application properties and `data.sql` seeder script.
