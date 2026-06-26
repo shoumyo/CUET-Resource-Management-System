@@ -790,18 +790,47 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
               )}
 
               {/* Resource Info Card */}
-              <div className="mb-5 p-4 gradient-card rounded-xl border border-outline-variant/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary" style={{ fontSize: "22px" }}>
+              <div className="mb-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                    <span className="material-symbols-outlined text-white" style={{ fontSize: "24px" }}>
                       {typeIcons[selectedResource?.type] || "domain"}
                     </span>
                   </div>
                   <div>
-                    <h4 className="text-[15px] font-semibold text-on-surface">{selectedResource?.name}</h4>
-                    <p className="text-[12px] text-on-surface-variant">
-                      {selectedResource?.type} · Capacity {selectedResource?.capacity} · {selectedResource?.indoor ? `${selectedResource?.openTime?.substring(0,5)} – ${selectedResource?.closeTime?.substring(0,5)}` : "Open 24/7"}
-                    </p>
+                    <h4 className="text-[18px] font-bold text-on-surface leading-tight">{selectedResource?.name}</h4>
+                    <p className="text-[13px] text-primary font-medium mt-0.5">Resource Information</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Square Box 1: Type */}
+                  <div className="aspect-square bg-blue-50 border border-blue-100 rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                      <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "18px" }}>category</span>
+                    </div>
+                    <span className="text-[10px] text-blue-600 uppercase tracking-wider font-bold">Type</span>
+                    <span className="text-[13px] font-bold text-on-surface mt-0.5">{selectedResource?.type}</span>
+                  </div>
+
+                  {/* Square Box 2: Capacity */}
+                  <div className="aspect-square bg-emerald-50 border border-emerald-100 rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
+                      <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: "18px" }}>groups</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-700 uppercase tracking-wider font-bold">Capacity</span>
+                    <span className="text-[13px] font-bold text-on-surface mt-0.5">{selectedResource?.capacity}</span>
+                  </div>
+
+                  {/* Square Box 3: Timing */}
+                  <div className="aspect-square bg-amber-50 border border-amber-100 rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center mb-2">
+                      <span className="material-symbols-outlined text-amber-600" style={{ fontSize: "18px" }}>schedule</span>
+                    </div>
+                    <span className="text-[10px] text-amber-700 uppercase tracking-wider font-bold">Hours</span>
+                    <span className="text-[13px] font-bold text-on-surface mt-0.5 leading-tight">
+                      {selectedResource?.indoor ? `${selectedResource?.openTime?.substring(0,5)} - ${selectedResource?.closeTime?.substring(0,5)}` : "24/7"}
+                    </span>
                   </div>
                 </div>
               </div>
