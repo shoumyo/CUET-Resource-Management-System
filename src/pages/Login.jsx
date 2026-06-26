@@ -55,6 +55,7 @@ export default function Login({ onNavigate, onLogin }) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [animating, setAnimating] = useState(false);
@@ -270,13 +271,23 @@ export default function Login({ onNavigate, onLogin }) {
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style={{ fontSize: "20px" }}>lock</span>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-outline-variant/30 bg-white/50 text-[14px] focus:border-amber-400 focus:ring-4 focus:ring-amber-400/20 outline-none transition-all duration-300 hover:border-outline-variant/60 hover:bg-white"
+                    className="w-full pl-10 pr-10 py-3 rounded-xl border-2 border-outline-variant/30 bg-white/50 text-[14px] focus:border-amber-400 focus:ring-4 focus:ring-amber-400/20 outline-none transition-all duration-300 hover:border-outline-variant/60 hover:bg-white"
                     placeholder="Enter your password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-amber-500 transition-colors focus:outline-none"
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                      {showPassword ? "visibility_off" : "visibility"}
+                    </span>
+                  </button>
                 </div>
               </div>
 
