@@ -474,7 +474,6 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
                     className="card-level-1 overflow-hidden p-0 animate-slide-up flex flex-col"
                     style={{ animationDelay: `${i * 0.05}s`, animationFillMode: "both" }}
                   >
-                    <div className="h-2 gradient-primary rounded-t-lg flex-shrink-0" />
                     <div className="p-5 flex-1 flex flex-col">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -497,11 +496,11 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
                       {/* Info Tiles */}
                       <div className="grid grid-cols-3 gap-2 mb-5">
                         {/* Square Box 1: Location */}
-                        <div className="aspect-square bg-blue-50 border border-blue-100 rounded-xl flex flex-col items-center justify-center p-1 text-center transition-transform hover:scale-105">
-                          <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center mb-1.5">
-                            <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "16px" }}>{resource.indoor ? "home" : "park"}</span>
+                        <div className="aspect-square bg-purple-50 border border-purple-100 rounded-xl flex flex-col items-center justify-center p-1 text-center transition-transform hover:scale-105">
+                          <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center mb-1.5">
+                            <span className="material-symbols-outlined text-purple-600" style={{ fontSize: "16px" }}>{resource.indoor ? "home" : "park"}</span>
                           </div>
-                          <span className="text-[9px] text-blue-600 uppercase tracking-wider font-bold">Location</span>
+                          <span className="text-[9px] text-purple-600 uppercase tracking-wider font-bold">Location</span>
                           <span className="text-[12px] font-bold text-on-surface mt-0.5">{resource.indoor ? "Indoor" : "Outdoor"}</span>
                         </div>
 
@@ -828,11 +827,11 @@ export default function StudentDashboard({ onLogout, user, onUpdateUser }) {
 
                 <div className="grid grid-cols-3 gap-3">
                   {/* Square Box 1: Type */}
-                  <div className="aspect-square bg-blue-50 border border-blue-100 rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                      <span className="material-symbols-outlined text-blue-600" style={{ fontSize: "18px" }}>category</span>
+                  <div className="aspect-square bg-purple-50 border border-purple-100 rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105">
+                    <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+                      <span className="material-symbols-outlined text-purple-600" style={{ fontSize: "18px" }}>category</span>
                     </div>
-                    <span className="text-[10px] text-blue-600 uppercase tracking-wider font-bold">Type</span>
+                    <span className="text-[10px] text-purple-600 uppercase tracking-wider font-bold">Type</span>
                     <span className="text-[13px] font-bold text-on-surface mt-0.5">{selectedResource?.type}</span>
                   </div>
 
