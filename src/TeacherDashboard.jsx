@@ -118,14 +118,16 @@ export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
   const [remarksMap, setRemarksMap] = useState({});
   const [profileOpen, setProfileOpen] = useState(false);
   const [expandedText, setExpandedText] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchRequests();
   }, [activeNav]);
 
   const handleRefresh = async () => {
+    setIsRefreshing(true);
     await fetchRequests();
-    toast.success("Data refreshed");
+    setTimeout(() => setIsRefreshing(false), 500);
   };
 
   const fetchRequests = async () => {
@@ -272,8 +274,8 @@ export default function TeacherDashboard({ onLogout, user, onUpdateUser }) {
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={handleRefresh} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm" title="Refresh">
-              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">refresh</span>
+            <button onClick={handleRefresh} disabled={isRefreshing} className="flex items-center gap-2 px-3 h-10 rounded-xl hover:bg-surface-container-low transition-colors border border-outline-variant/30 bg-white shadow-sm disabled:opacity-50" title="Refresh">
+              <span className={`material-symbols-outlined text-[18px] text-on-surface-variant ${isRefreshing ? "animate-spin" : ""}`}>refresh</span>
               <span className="text-[13px] font-semibold text-on-surface-variant hidden sm:block">Refresh</span>
             </button>
             <button onClick={() => setProfileOpen(true)} className="flex items-center gap-sm p-1.5 pr-3 rounded-xl hover:bg-surface-container-low transition-colors border border-transparent hover:border-outline-variant/30 text-left bg-white shadow-sm">
