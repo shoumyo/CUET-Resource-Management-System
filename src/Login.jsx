@@ -89,7 +89,6 @@ export default function Login({ onNavigate, onLogin }) {
       } else {
         data = await login({ email, password });
 
-        // Validate that the user's actual role matches the selected tab
         if (data.role !== role) {
           const roleLabel = role.charAt(0) + role.slice(1).toLowerCase();
           const actualLabel = data.role.charAt(0) + data.role.slice(1).toLowerCase();
@@ -117,7 +116,6 @@ export default function Login({ onNavigate, onLogin }) {
 
   return (
     <div className="min-h-screen flex text-on-surface font-body-md" style={{ background: "linear-gradient(135deg, #f8f9fc 0%, #eef0f7 50%, #f0f2fa 100%)" }}>
-      {/* Left side illustration */}
       <div className="hidden lg:flex flex-1 items-center justify-center p-xl relative overflow-hidden group">
         <div className="absolute inset-0 transition-opacity duration-1000" key={config.leftImage}>
           <img 
@@ -128,7 +126,6 @@ export default function Login({ onNavigate, onLogin }) {
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/50 to-black/90 backdrop-blur-[2px]" />
         
-        {/* Animated decorative elements */}
         <div className="absolute top-20 left-20 w-64 h-64 rounded-full border border-white/20 animate-float" />
         <div className="absolute bottom-32 right-16 w-40 h-40 rounded-full border border-white/20 animate-float" style={{ animationDelay: "2s" }} />
         
@@ -136,18 +133,17 @@ export default function Login({ onNavigate, onLogin }) {
           <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mx-auto mb-8 overflow-hidden p-1 shadow-[0_0_30px_rgba(255,255,255,0.1)] border border-white/20">
             <img src={cuetLogo} alt="CUET Logo" className="w-full h-full object-contain drop-shadow-md" />
           </div>
-          <h2 className="text-[42px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-200 mb-6 tracking-tight drop-shadow-[0_2px_10px_rgba(251,191,36,0.3)] leading-tight">
+          <h2 className="text-[42px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#C9B59C] via-[#EFE9E3] to-[#F9F8F6] mb-6 tracking-tight drop-shadow-[0_2px_10px_rgba(201,181,156,0.5)] leading-tight">
             {config.leftTitle}
           </h2>
-          <p className="text-[16px] text-white/90 leading-relaxed drop-shadow-md mb-10">
+          <p className="text-[16px] text-[#F9F8F6]/90 leading-relaxed drop-shadow-md mb-10">
             {config.leftSubtitle}
           </p>
-          {/* Feature pills */}
           <div className="flex flex-wrap justify-center gap-3">
             {config.leftPills.map((f, i) => (
               <span 
                 key={f} 
-                className="px-4 py-2 rounded-full bg-amber-500/20 text-amber-200 text-[13px] font-bold backdrop-blur-md border border-amber-500/30 shadow-lg animate-pop-in hover:bg-amber-500/30 transition-all cursor-default hover:scale-105"
+                className="px-4 py-2 rounded-full bg-[#C9B59C]/20 text-[#EFE9E3] text-[13px] font-bold backdrop-blur-md border border-[#C9B59C]/30 shadow-lg animate-pop-in hover:bg-[#C9B59C]/30 transition-all cursor-default hover:scale-105"
                 style={{ animationDelay: `${0.1 + i * 0.1}s` }}
               >
                 {f}
@@ -157,7 +153,6 @@ export default function Login({ onNavigate, onLogin }) {
         </div>
       </div>
 
-      {/* Right side form */}
       <div className="flex-1 flex flex-col justify-center px-margin-mobile md:px-margin-desktop py-xl">
         <div className="w-full max-w-sm mx-auto">
           <div className="mb-xl text-center lg:text-left">
@@ -176,7 +171,6 @@ export default function Login({ onNavigate, onLogin }) {
             </p>
           </div>
 
-          {/* Role Selector with icons */}
           <div className="flex bg-surface-container-low/60 p-1.5 rounded-2xl mb-6 backdrop-blur-sm gap-1.5">
             {["STUDENT", "TEACHER", "ADMIN"].map((r) => {
               const rc = roleConfig[r];
@@ -207,7 +201,6 @@ export default function Login({ onNavigate, onLogin }) {
             })}
           </div>
 
-          {/* Role description badge */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-xl mb-5 transition-all duration-300 ${config.lightBg}`}
             style={{
@@ -230,7 +223,6 @@ export default function Login({ onNavigate, onLogin }) {
             </div>
           )}
 
-          {/* Animated form wrapper */}
           <div
             key={formKey}
             className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)] transition-all duration-500"
